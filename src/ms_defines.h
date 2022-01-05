@@ -10,6 +10,7 @@ typedef enum {
 typedef enum {
     ms_st_ok,
     ms_st_fail,
+    ms_st_mem_err,
     ms_st_null_arg,
     ms_st_inval_arg,
     ms_st_limit_exhaust,

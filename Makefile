@@ -32,4 +32,4 @@ $(BIN_DIR):
 	[ -d $(BIN_DIR) ] || mkdir -p $(BIN_DIR)
 
 build/%.o : src/%.c
-	$(CC) $(INCLUDE) -c $< -o $@
+	$(CC) -g $(INCLUDE) -c $< -o $@
