@@ -4,6 +4,8 @@
 #include <string.h>
 
 #include "cmd_map.h"
+#include "ms_log.h"
+
 
 #define FALSE               0
 #define TRUE                !(FALSE)
@@ -61,11 +63,7 @@ int main(int argc, char *argv[]) {
             printf("\r%s%s", prompt, command);
             curs_pos = strlen(prompt) + strlen(command);
         }
-        {
-            FILE *fp = fopen("/dev/pts/2", "w");
-            fprintf(fp, "current curser: %d char_count: %d\n", curs_pos, char_count);
-            fclose(fp);
-        }
+        ms_log("current curser: %d char_count: %d\n", curs_pos, char_count);
 
         ch = getchar();
         // printf("You pressed: %x\n", ch);
