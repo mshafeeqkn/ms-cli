@@ -1,14 +1,15 @@
-OBJS = main.o cmd_map.o
+OBJS = build/main.o build/cmd_map.o
+EXEC=bin/ms-cli
 CFLAGS = -g -Wall -Werror
 CC = gcc
 INCLUDE =
 LIBS =
 
-ms-cli: $(OBJS)
+$(EXEC): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LIBS)
 
 clean:
-	rm -rf *.o ms-cli
+	rm -rf build/*.o $(EXEC)
 
-%.o : %.c
+build/%.o : src/%.c
 	$(CC) $(INCLUDE) -c $< -o $@
