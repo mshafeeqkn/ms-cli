@@ -8,10 +8,12 @@ typedef enum {
 } cli_state_t;
 
 typedef enum {
-    ms_status_ok,
-    ms_mem_fail,
-    ms_arg_null,
-    ms_status_unknown
+    ms_st_ok,
+    ms_st_fail,
+    ms_st_null_arg,
+    ms_st_inval_arg,
+    ms_st_limit_exhaust,
+    ms_st_unknown
 } ms_status_t;
 
 #endif

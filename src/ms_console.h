@@ -8,14 +8,20 @@ typedef struct {
     int len;
     int curser;
     char *prefix;
-} cmd_info_t;
+} ms_cmd_t;
 
-extern cmd_info_t* create_cmd_info(char *str);
+extern ms_cmd_t* create_ms_cmd(char *str);
 
-extern void cmd_info_free(cmd_info_t *info);
+extern void ms_cmd_free(ms_cmd_t *cmd);
 
-extern ms_status_t cmd_info_set_prefix(cmd_info_t *info, char *prefix);
+extern ms_status_t ms_cmd_set_prefix(ms_cmd_t *cmd, char *prefix);
 
-extern void ms_print_console(cmd_info_t *cmd_info);
+extern ms_status_t ms_cmd_set_curser(ms_cmd_t *cmd, int curser);
+
+extern ms_status_t ms_cmd_curser_fw(ms_cmd_t *cmd);
+
+extern ms_status_t ms_cmd_curser_bw(ms_cmd_t *cmd);
+
+extern void ms_print_cmd(ms_cmd_t *cmd);
 
 #endif

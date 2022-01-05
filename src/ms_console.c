@@ -8,10 +8,10 @@
 #define MAX_CONSOLE_LEN         1024
 
 
-extern cmd_info_t* create_cmd_info(char *str) {
+extern ms_cmd_t* create_ms_cmd(char *str) {
     int len = strlen(str);
 
-    cmd_info_t *ret = malloc(sizeof(cmd_info_t));
+    ms_cmd_t *ret = malloc(sizeof(ms_cmd_t));
     if(!ret)
         return NULL;
 
@@ -30,29 +30,61 @@ extern cmd_info_t* create_cmd_info(char *str) {
     return ret;
 }
 
-extern void cmd_info_free(cmd_info_t *info) {
-    free(info->str);
-    free(info->prefix);
-    free(info);
+extern void ms_cmd_free(ms_cmd_t *cmd) {
+    free(cmd->str);
+    free(cmd->prefix);
+    free(cmd);
 }
 
-ms_status_t cmd_info_set_prefix(cmd_info_t *info, char *prefix) {
+ms_status_t ms_cmd_set_prefix(ms_cmd_t *cmd, char *prefix) {
     int pref_len = strlen(prefix);
 
-    if(!info || !prefix)
-        return ms_arg_null;
+    if(!cmd || !prefix)
+        return -ms_st_null_arg;
 
-    info->prefix = malloc(pref_len + 1);
-    if(!info->prefix)
-        return ms_mem_fail;
+    cmd->prefix = malloc(pref_len + 1);
+    if(!cmd->prefix)
+        return -ms_st_null_arg;
 
-    strncpy(info->prefix, prefix, pref_len);
-    info->prefix[pref_len] = 0;
-    return ms_status_ok;
+    strncpy(cmd->prefix, prefix, pref_len);
+    cmd->prefix[pref_len] = 0;
+    return ms_st_ok;
 }
 
-void ms_print_console(cmd_info_t *info) {
+ms_status_t ms_cmd_set_curser(ms_cmd_t *cmd, int curser) {
+    if(!cmd)
+        return -ms_st_null_arg;
+
+    if(curser < -1 || curser > cmd->len)
+        return -ms_st_inval_arg;
+
+    cmd->curser = curser;
+
+    return ms_st_ok;
+}
+
+ms_status_t ms_cmd_curser_fw(ms_cmd_t *cmd) {
+    if(cmd->curser == cmd->len)
+        return -ms_st_limit_exhaust;
+
+    cmd->curser++;
+    return ms_st_ok;
+}
+
+#include "ms_log.h"
+
+ms_status_t ms_cmd_curser_bw(ms_cmd_t *cmd) {
+    if(cmd->curser == 0)
+        return -ms_st_limit_exhaust;
+
+    cmd->curser--;
+    return ms_st_ok;
+}
+
+void ms_print_cmd(ms_cmd_t *cmd) {
     char buff[MAX_CONSOLE_LEN] = {0};
-    snprintf(buff, MAX_CONSOLE_LEN, "%s %s", info->prefix, info->str);
-    printf("%s", buff);
+    snprintf(buff, MAX_CONSOLE_LEN, "%s %s", cmd->prefix, cmd->str);
+    printf("\r%s", buff);
+    printf("\033[%dD", cmd->len - cmd->curser);
+    fflush(stdout);
 }

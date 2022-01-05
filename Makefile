@@ -9,8 +9,8 @@ INCLUDE =
 LIBS =
 BUILD_DIR = build
 BIN_DIR = bin
-TEST_EXEC=bin/test_cli
-TEST_OBJ=build/test_cli.o
+TEST_EXEC=bin/test-cli
+TEST_OBJ=build/ms_test.o
 EXEC_OBJ=build/main.o
 
 all: $(EXEC)

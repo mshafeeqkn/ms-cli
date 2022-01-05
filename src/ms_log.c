@@ -2,7 +2,7 @@
 #include <stdarg.h>
 
 
-static const char *term_file = "/dev/pts/0";
+static const char *term_file = "/dev/pts/2";
 
 #define   MS_DEBUG      1
 
@@ -12,6 +12,7 @@ void ms_log(const char* format, ...) {
     va_list args;
     va_start (args, format);
     vfprintf (fp, format, args);
+    fprintf(fp, "\n");
     va_end (args);
     fclose(fp);
 #endif

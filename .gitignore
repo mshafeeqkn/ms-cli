@@ -1,4 +1,6 @@
-ms-cli
+bin/*
+build/*
+
 
 # Prerequisites
 *.d
