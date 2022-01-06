@@ -61,7 +61,7 @@ ms_status_t ms_cmd_set_curser(ms_cmd_t *cmd, int curser) {
     if(!cmd)
         return -ms_st_null_arg;
 
-    if(curser < -1 || curser > cmd->len + 1)
+    if(curser < -1 || curser > cmd->len)
         return -ms_st_inval_arg;
 
     cmd->curser = curser;
@@ -70,7 +70,7 @@ ms_status_t ms_cmd_set_curser(ms_cmd_t *cmd, int curser) {
 }
 
 ms_status_t ms_cmd_curser_fw(ms_cmd_t *cmd) {
-    if(cmd->curser > cmd->len)
+    if(cmd->curser == cmd->len)
         return -ms_st_limit_exhaust;
 
     cmd->curser++;
@@ -90,15 +90,14 @@ ms_status_t ms_cmd_insert_char_at(ms_cmd_t *cmd, int pos, char ch) {
     ms_status_t ret;
     int char_index;
 
-    if(pos < 0 || pos > cmd->len + 1)
+    if(pos < 0 || pos > cmd->len)
         return -ms_st_inval_arg;
 
     strncpy(tmp, cmd->str, pos);
 
     // char_index is the index at which the new char 'ch'
     // has to be inserted. 
-    char_index = pos > cmd->len ? cmd->len : pos;
-    tmp[char_index] = ch;
+    tmp[pos] = ch;
     strcpy(tmp + pos + 1, cmd->str + pos);
 
     cmd->len++;
@@ -125,7 +124,8 @@ void ms_print_console(ms_cmd_t *cmd) {
     char buff[MAX_CONSOLE_LEN] = {0};
     snprintf(buff, MAX_CONSOLE_LEN, "%s %s", cmd->prefix, cmd->str);
     printf("\r%s", buff);
-    if(cmd->len != cmd->curser);
+    if(cmd->len != cmd->curser)
         printf("\033[%dD", cmd->len - cmd->curser);
     fflush(stdout);
+    ms_cmd_print(cmd);
 }
