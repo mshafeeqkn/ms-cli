@@ -1,6 +1,11 @@
 #ifndef __MS_DEFINES_H__
 #define __MS_DEFINES_H__
 
+#define FALSE               0
+#define TRUE                !(FALSE)
+#define MAX_PROMPT          128
+#define MAX_COMMAND_LEN     1024
+
 typedef enum {
     cli_disabled = 0,
     cli_enabled,

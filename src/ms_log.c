@@ -2,7 +2,7 @@
 #include <stdarg.h>
 
 
-static const char *term_file = "/dev/pts/1";
+static const char *term_file = "/dev/pts/3";
 
 #define   MS_DEBUG      1
 

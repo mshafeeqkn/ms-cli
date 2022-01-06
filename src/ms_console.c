@@ -6,10 +6,8 @@
 #include "ms_defines.h"
 #include "ms_log.h"
 
-#define MAX_CONSOLE_LEN         1024
 
-
-extern ms_cmd_t* create_ms_cmd(char *str) {
+extern ms_cmd_t* ms_cmd_create(char *str) {
     int len = strlen(str);
 
     ms_cmd_t *ret = malloc(sizeof(ms_cmd_t));
@@ -26,7 +24,7 @@ extern ms_cmd_t* create_ms_cmd(char *str) {
     ret->str[len] = 0;
 
     ret->len = len;
-    ret->curser = len + 1;
+    ret->curser = len;
 
     return ret;
 }
@@ -86,7 +84,7 @@ ms_status_t ms_cmd_curser_bw(ms_cmd_t *cmd) {
 }
 
 ms_status_t ms_cmd_insert_char_at(ms_cmd_t *cmd, int pos, char ch) {
-    char tmp[MAX_CONSOLE_LEN] = {0};
+    char tmp[MAX_COMMAND_LEN] = {0};
     ms_status_t ret;
     int char_index;
 
@@ -120,9 +118,24 @@ ms_status_t ms_cmd_insert_char(ms_cmd_t *cmd, char ch) {
     return ms_cmd_insert_char_at(cmd, cmd->curser, ch);
 }
 
+ms_status_t ms_cmd_remove_char(ms_cmd_t *cmd) {
+    if(cmd->curser == 0 || cmd->curser > cmd->len)
+        return -ms_st_fail;
+
+    if(cmd->len != cmd->curser) {
+        strcpy(cmd->str + cmd->curser - 1, cmd->str + cmd->curser);
+    }
+
+    cmd->curser--;
+    cmd->len--;
+    cmd->str[cmd->len] = 0;
+    return ms_st_ok;
+}
+
 void ms_print_console(ms_cmd_t *cmd) {
-    char buff[MAX_CONSOLE_LEN] = {0};
-    snprintf(buff, MAX_CONSOLE_LEN, "%s %s", cmd->prefix, cmd->str);
+    char buff[MAX_COMMAND_LEN] = {0};
+    snprintf(buff, MAX_COMMAND_LEN, "%s %s", cmd->prefix, cmd->str);
+    printf("\033[2K");
     printf("\r%s", buff);
     if(cmd->len != cmd->curser)
         printf("\033[%dD", cmd->len - cmd->curser);

@@ -11,7 +11,7 @@ BUILD_DIR = build
 BIN_DIR = bin
 TEST_EXEC=bin/test-cli
 TEST_OBJ=build/ms_test.o
-EXEC_OBJ=build/main.o
+EXEC_OBJ=build/ms_main.o
 
 all: $(EXEC)
 test: $(TEST_EXEC)

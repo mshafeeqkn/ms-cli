@@ -8,10 +8,6 @@
 #include "ms_console.h"
 #include "ms_defines.h"
 
-#define FALSE               0
-#define TRUE                !(FALSE)
-#define MAX_PROMPT          128
-#define MAX_COMMAND_LEN     256
 
 static void get_prompt(cli_state_t state, char *buff, size_t buff_len) {
     memset(buff, 0, buff_len);
