@@ -1,11 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "ms_console.h"
 #include "ms_defines.h"
 #include "ms_log.h"
-
 
 extern ms_cmd_t* ms_cmd_create(char *str) {
     int len = strlen(str);
@@ -25,7 +23,10 @@ extern ms_cmd_t* ms_cmd_create(char *str) {
 
     ret->len = len;
     ret->curser = len;
+    ret->next = NULL;
+    ret->prev = NULL;
 
+    ms_log(log_dbg, "Created new cmd node: 0x%x", addr(ret));
     return ret;
 }
 
@@ -35,8 +36,9 @@ void ms_cmd_free(ms_cmd_t *cmd) {
     free(cmd);
 }
 
-void ms_cmd_print(ms_cmd_t *cmd) {
-    ms_log("%s %s\tlen: %d, pos: %d",
+void _ms_cmd_print(char *pref, ms_cmd_t *cmd) {
+    ms_log(log_dbg, "%s - 0x%06x<(this:0x%06x)>0x%06x %s %-10s\tlen: %d, pos: %d",
+        pref, addr(cmd->prev), addr(cmd), addr(cmd->next),
         cmd->prefix, cmd->str, cmd->len, cmd->curser);
 }
 
@@ -140,5 +142,69 @@ void ms_print_console(ms_cmd_t *cmd) {
     if(cmd->len != cmd->curser)
         printf("\033[%dD", cmd->len - cmd->curser);
     fflush(stdout);
-    ms_cmd_print(cmd);
+}
+
+ms_status_t ms_cmd_hook_after(ms_cmd_t *head, ms_cmd_t *cmd) {
+    if(head == NULL || cmd == NULL) {
+        return -ms_st_null_arg;
+    }
+
+    if(cmd->next) {
+        cmd->next->prev = cmd->prev;
+        cmd->prev->next = cmd->next;
+    }
+    while(head->next)
+        head = head->next;
+
+    head->next = cmd;
+    cmd->prev = head;
+
+    return ms_st_ok;
+}
+
+
+ms_status_t ms_cmd_copy_data(ms_cmd_t *dst, ms_cmd_t *src) {
+    int pref_len = strlen(src->prefix);
+
+    if(dst->str)
+        free(dst->str);
+    dst->str = calloc(src->len + 1, sizeof(char));
+
+    if(dst->prefix)
+        free(dst->prefix);
+    dst->prefix = calloc(pref_len + 1, sizeof(char));
+
+    strncpy(dst->str, src->str, src->len);
+    strncpy(dst->prefix, src->prefix, pref_len);
+    dst->len = src->len;
+    dst->curser = src->len;
+}
+
+ms_status_t ms_cmd_copy_to_list_end(ms_cmd_t *head, ms_cmd_t *node) {
+    ms_cmd_t *tmp = ms_cmd_create(node->str);
+    ms_cmd_set_prefix(tmp, node->prefix);
+    memset(tmp, 0, sizeof(ms_cmd_t));
+
+    ms_cmd_t *tail = head;
+    while(tail->next)
+        tail = tail->next;
+
+    if(tail->len == 0)
+        tail = tail->prev;
+        ms_cmd_free(tail->next);
+
+    tail->next = tmp;
+    tmp->prev = tail;
+    ms_cmd_copy_data(tmp, node);
+}
+
+
+ms_status_t ms_command_print_history(ms_cmd_t *cmd, int fw) {
+    while(cmd) {
+         ms_cmd_print(cmd);
+        if(fw)
+            cmd = cmd->next;
+        else
+            cmd = cmd->prev;
+    }
 }

@@ -2,18 +2,26 @@
 #include <stdarg.h>
 
 
-static const char *term_file = "/dev/pts/3";
+#include "ms_log.h"
 
-#define   MS_DEBUG      1
+static const char *term_file = "/dev/pts/1";
 
-void ms_log(const char* format, ...) {
-#if MS_DEBUG
-    FILE *fp = fopen(term_file, "w");
+log_level_t log_level = log_dbg;
+
+void _ms_log(log_level_t level, char *file, int line,  const char* format, ...) {
+    FILE *fp;
     va_list args;
+    char f[128] = {0};
+
+    if(level > log_level)
+        return;
+
+    fp = fopen(term_file, "w");
+    sprintf(f, "%s:%d ", file, line);
+    fprintf(fp, "%-18s|", f);
     va_start (args, format);
     vfprintf (fp, format, args);
     fprintf(fp, "\n");
     va_end (args);
     fclose(fp);
-#endif
 }

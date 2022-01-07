@@ -5,6 +5,10 @@
 #define TRUE                !(FALSE)
 #define MAX_PROMPT          128
 #define MAX_COMMAND_LEN     1024
+#define EMPTY_STR           ""
+
+#define addr(n)     (0xffffff & (unsigned long)n)
+
 
 typedef enum {
     cli_disabled = 0,

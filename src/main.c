@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <termios.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "cmd_map.h"
 #include "ms_log.h"
