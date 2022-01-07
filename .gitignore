@@ -1,6 +1,6 @@
 bin/*
 build/*
-
+.project
 
 # Prerequisites
 *.d

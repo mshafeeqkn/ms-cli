@@ -22,7 +22,7 @@ extern ms_cmd_t* ms_cmd_create(char *str) {
     ret->str[len] = 0;
 
     ret->len = len;
-    ret->curser = len;
+    ret->cursor = len;
     ret->next = NULL;
     ret->prev = NULL;
 
@@ -39,7 +39,7 @@ void ms_cmd_free(ms_cmd_t *cmd) {
 void _ms_cmd_print(char *pref, ms_cmd_t *cmd) {
     ms_log(log_dbg, "%s - 0x%06x<(this:0x%06x)>0x%06x %s %-10s\tlen: %d, pos: %d",
         pref, addr(cmd->prev), addr(cmd), addr(cmd->next),
-        cmd->prefix, cmd->str, cmd->len, cmd->curser);
+        cmd->prefix, cmd->str, cmd->len, cmd->cursor);
 }
 
 ms_status_t ms_cmd_set_prefix(ms_cmd_t *cmd, char *prefix) {
@@ -57,31 +57,31 @@ ms_status_t ms_cmd_set_prefix(ms_cmd_t *cmd, char *prefix) {
     return ms_st_ok;
 }
 
-ms_status_t ms_cmd_set_curser(ms_cmd_t *cmd, int curser) {
+ms_status_t ms_cmd_set_cursor(ms_cmd_t *cmd, int cursor) {
     if(!cmd)
         return -ms_st_null_arg;
 
-    if(curser < -1 || curser > cmd->len)
+    if(cursor < -1 || cursor > cmd->len)
         return -ms_st_inval_arg;
 
-    cmd->curser = curser;
+    cmd->cursor = cursor;
 
     return ms_st_ok;
 }
 
-ms_status_t ms_cmd_curser_fw(ms_cmd_t *cmd) {
-    if(cmd->curser == cmd->len)
+ms_status_t ms_cmd_cursor_fw(ms_cmd_t *cmd) {
+    if(cmd->cursor == cmd->len)
         return -ms_st_limit_exhaust;
 
-    cmd->curser++;
+    cmd->cursor++;
     return ms_st_ok;
 }
 
-ms_status_t ms_cmd_curser_bw(ms_cmd_t *cmd) {
-    if(cmd->curser == 0)
+ms_status_t ms_cmd_cursor_bw(ms_cmd_t *cmd) {
+    if(cmd->cursor == 0)
         return -ms_st_limit_exhaust;
 
-    cmd->curser--;
+    cmd->cursor--;
     return ms_st_ok;
 }
 
@@ -98,7 +98,7 @@ ms_status_t ms_cmd_insert_char_at(ms_cmd_t *cmd, int pos, char ch) {
     strcpy(tmp + pos + 1, cmd->str + pos);
 
     cmd->len++;
-    ret = ms_cmd_set_curser(cmd, pos + 1);
+    ret = ms_cmd_set_cursor(cmd, pos + 1);
     if(ret != ms_st_ok)
         return ret;
 
@@ -114,18 +114,18 @@ ms_status_t ms_cmd_insert_char_at(ms_cmd_t *cmd, int pos, char ch) {
 }
 
 ms_status_t ms_cmd_insert_char(ms_cmd_t *cmd, char ch) {
-    return ms_cmd_insert_char_at(cmd, cmd->curser, ch);
+    return ms_cmd_insert_char_at(cmd, cmd->cursor, ch);
 }
 
 ms_status_t ms_cmd_remove_char(ms_cmd_t *cmd) {
-    if(cmd->curser == 0 || cmd->curser > cmd->len)
+    if(cmd->cursor == 0 || cmd->cursor > cmd->len)
         return -ms_st_fail;
 
-    if(cmd->len != cmd->curser) {
-        strcpy(cmd->str + cmd->curser - 1, cmd->str + cmd->curser);
+    if(cmd->len != cmd->cursor) {
+        strcpy(cmd->str + cmd->cursor - 1, cmd->str + cmd->cursor);
     }
 
-    cmd->curser--;
+    cmd->cursor--;
     cmd->len--;
     cmd->str[cmd->len] = 0;
     return ms_st_ok;
@@ -136,8 +136,8 @@ void ms_print_console(ms_cmd_t *cmd) {
     snprintf(buff, MAX_COMMAND_LEN, "%s %s", cmd->prefix, cmd->str);
     printf("\033[2K");
     printf("\r%s", buff);
-    if(cmd->len != cmd->curser)
-        printf("\033[%dD", cmd->len - cmd->curser);
+    if(cmd->len != cmd->cursor)
+        printf("\033[%dD", cmd->len - cmd->cursor);
     fflush(stdout);
 }
 
@@ -181,7 +181,7 @@ ms_status_t ms_cmd_copy_data(ms_cmd_t *dst, ms_cmd_t *src) {
     strncpy(dst->str, src->str, src->len);
     strncpy(dst->prefix, src->prefix, pref_len);
     dst->len = src->len;
-    dst->curser = src->len;
+    dst->cursor = src->len;
 
     return ms_st_ok;
 }

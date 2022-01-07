@@ -72,10 +72,10 @@ int main(int argc, char *argv[]) {
                             cmd = cmd->next;
                         break;
                     case 'C':   // Right
-                        ms_cmd_curser_fw(cmd);
+                        ms_cmd_cursor_fw(cmd);
                         break;
                     case 'D':   // Left
-                        ms_cmd_curser_bw(cmd);
+                        ms_cmd_cursor_bw(cmd);
                         break;
                 }
                 break;
