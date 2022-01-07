@@ -124,7 +124,7 @@ cmd_entry_t disable_cmd_map[] = {
     }
 };
 
-extern void print_help(cmd_entry_t cmd_map[]) {
+void print_help(cmd_entry_t cmd_map[]) {
     int i = 0;
 
     printf("\n");

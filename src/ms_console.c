@@ -88,15 +88,12 @@ ms_status_t ms_cmd_curser_bw(ms_cmd_t *cmd) {
 ms_status_t ms_cmd_insert_char_at(ms_cmd_t *cmd, int pos, char ch) {
     char tmp[MAX_COMMAND_LEN] = {0};
     ms_status_t ret;
-    int char_index;
 
     if(pos < 0 || pos > cmd->len)
         return -ms_st_inval_arg;
 
     strncpy(tmp, cmd->str, pos);
 
-    // char_index is the index at which the new char 'ch'
-    // has to be inserted. 
     tmp[pos] = ch;
     strcpy(tmp + pos + 1, cmd->str + pos);
 
@@ -164,42 +161,65 @@ ms_status_t ms_cmd_hook_after(ms_cmd_t *head, ms_cmd_t *cmd) {
 
 
 ms_status_t ms_cmd_copy_data(ms_cmd_t *dst, ms_cmd_t *src) {
+    if(src == NULL || dst == NULL)
+        return -ms_st_null_arg;
+
     int pref_len = strlen(src->prefix);
 
     if(dst->str)
         free(dst->str);
     dst->str = calloc(src->len + 1, sizeof(char));
+    if(dst->str == NULL)
+        return -ms_st_mem_err;
 
     if(dst->prefix)
         free(dst->prefix);
     dst->prefix = calloc(pref_len + 1, sizeof(char));
+    if(dst->prefix == NULL)
+        return -ms_st_mem_err;
 
     strncpy(dst->str, src->str, src->len);
     strncpy(dst->prefix, src->prefix, pref_len);
     dst->len = src->len;
     dst->curser = src->len;
+
+    return ms_st_ok;
 }
 
 ms_status_t ms_cmd_copy_to_list_end(ms_cmd_t *head, ms_cmd_t *node) {
-    ms_cmd_t *tmp = ms_cmd_create(node->str);
-    ms_cmd_set_prefix(tmp, node->prefix);
-    memset(tmp, 0, sizeof(ms_cmd_t));
+    ms_status_t ret;
 
+    if(head == NULL || node == NULL)
+        return -ms_st_null_arg;
+
+    ms_cmd_t *tmp = ms_cmd_create(node->str);
+    if(tmp == NULL) {
+        ms_log(log_dbg, "Error: Failed to create new node");
+        return -ms_st_fail;
+    }
+
+    ret = ms_cmd_set_prefix(tmp, node->prefix);
+    if(ret != ms_st_ok)
+        return ret;
+
+    memset(tmp, 0, sizeof(ms_cmd_t));
     ms_cmd_t *tail = head;
     while(tail->next)
         tail = tail->next;
 
-    if(tail->len == 0)
+    if(tail->len == 0) {
+        // If last node doesn't have any content, remove it.
         tail = tail->prev;
         ms_cmd_free(tail->next);
+    }
 
     tail->next = tmp;
     tmp->prev = tail;
-    ms_cmd_copy_data(tmp, node);
+    ret = ms_cmd_copy_data(tmp, node);
+    return ret;
 }
 
-
-ms_status_t ms_command_print_history(ms_cmd_t *cmd, int fw) {
+void ms_command_print_history(ms_cmd_t *cmd, int fw) {
     while(cmd) {
          ms_cmd_print(cmd);
         if(fw)

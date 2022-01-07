@@ -1,4 +1,4 @@
-OBJS = build/cmd_map.o\
+OBJS = \
     build/ms_log.o\
     build/ms_console.o
 
@@ -32,4 +32,4 @@ $(BIN_DIR):
 	[ -d $(BIN_DIR) ] || mkdir -p $(BIN_DIR)
 
 build/%.o : src/%.c
-	$(CC) -g $(INCLUDE) -c $< -o $@
+	$(CC) -g $(INCLUDE) $(CFLAGS) -c $< -o $@

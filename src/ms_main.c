@@ -39,6 +39,8 @@ int main(int argc, char *argv[]) {
                 ms_cmd_remove_char(cmd);
                 break;
             case '\t':          // Tab
+                // if(ms_get_matching_commands(cmd)) {
+                // }
                 putchar('\n');
                 break;
             case '\n':          // Return

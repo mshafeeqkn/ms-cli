@@ -16,6 +16,7 @@ struct ms_cmd{
     ms_cmd_t *prev;
 };
 
+
 extern ms_cmd_t* ms_cmd_create(char *str);
 
 extern void ms_cmd_free(ms_cmd_t *cmd);
@@ -40,7 +41,7 @@ extern void ms_print_console(ms_cmd_t *cmd);
 
 extern ms_status_t ms_cmd_hook_after(ms_cmd_t *parent, ms_cmd_t *cmd);
 
-extern ms_status_t ms_command_print_history(ms_cmd_t *cmd, int fw);
+extern void ms_command_print_history(ms_cmd_t *cmd, int fw);
 
 extern ms_status_t ms_cmd_copy_to_list_end(ms_cmd_t *head, ms_cmd_t *node);
 
