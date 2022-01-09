@@ -24,7 +24,7 @@ $(EXEC): $(BUILD_DIR) $(BIN_DIR) $(EXEC_OBJ) $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(EXEC_OBJ) $(OBJS) $(LIBS)
 
 clean:
-	rm -rf build/* bin/*
+	rm -rvf build/* bin/*
 
 $(BUILD_DIR):
 	[ -d $(BUILD_DIR) ] || mkdir -p $(BUILD_DIR)
