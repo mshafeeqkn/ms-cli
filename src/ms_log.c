@@ -4,7 +4,7 @@
 
 #include "ms_log.h"
 
-static const char *term_file = "/dev/pts/2";
+static const char *term_file = "/dev/pts/1";
 
 log_level_t log_level = log_dbg;
 

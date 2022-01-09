@@ -4,6 +4,7 @@
 
 #include "ms_entry.h"
 #include "ms_log.h"
+#include "ms_cmd.h"
 
 ms_status_t test_regsiter_after() {
     ms_status_t ret;
@@ -67,12 +68,28 @@ ms_status_t test_regsiter_after() {
     return ms_st_ok;
 }
 
+void *test_function_enable(void* args) {
+    return NULL;
+}
+
+
+void test_ms_cmd() {
+    ms_cmd_t *cmd = ms_cmd_create(1, "enable", "Enable privilaged mode",
+                                  "<0-1>", "This is the dummy arg help",
+                                  test_function_enable);
+    ms_cmd_dbg_print(cmd);
+    ms_cmd_destroy(cmd);
+}
 
 int main(int argc, char *argv[]) {
+#if 0
     ms_status_t ret;
     ret = test_regsiter_after();
     if(ret != ms_st_ok)
         ms_log(log_dbg, "============The test test_regsiter_after failed============");
+#endif
+
+    test_ms_cmd();
 
     return 0;
 }

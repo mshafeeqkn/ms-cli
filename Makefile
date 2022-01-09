@@ -1,6 +1,7 @@
 OBJS = \
     build/ms_log.o\
-    build/ms_entry.o
+    build/ms_entry.o\
+	build/ms_cmd.o
 
 EXEC=bin/ms-cli
 CFLAGS = -g -Wall -Werror

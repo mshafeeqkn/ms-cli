@@ -1,5 +1,5 @@
-#ifndef __MS_CONSOLE_H__
-#define __MS_CONSOLE_H__
+#ifndef __MS_ENTRY_H__
+#define __MS_ENTRY_H__
 
 #include "ms_defines.h"
 
