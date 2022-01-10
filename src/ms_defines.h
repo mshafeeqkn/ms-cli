@@ -6,6 +6,7 @@
 #define MAX_PROMPT          128
 #define MAX_COMMAND_LEN     1024
 #define EMPTY_STR           ""
+#define MAX_SUB_COMMANDS    32
 
 #define addr(n)     (0xffffff & (unsigned long)n)
 

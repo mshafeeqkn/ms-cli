@@ -31,9 +31,15 @@ extern ms_cmd_t* ms_cmd_create(unsigned int cmd_id,
 
 extern void ms_cmd_destroy(ms_cmd_t *cmd);
 
-ms_status_t ms_cmd_hook_as_child(ms_cmd_t *parent, ms_cmd_t *child);
+extern void ms_load_commands(ms_cmd_t **command_tree);
 
-ms_status_t ms_cmd_hook_at_end(ms_cmd_t *head, ms_cmd_t *node);
+extern ms_status_t ms_cmd_show_cmd_help(ms_cmd_t *tree, unsigned char *cmd_path, size_t path_size);
+
+extern ms_status_t ms_cmd_hook_as_child(ms_cmd_t *parent, ms_cmd_t *child);
+
+extern ms_status_t ms_cmd_hook_at_end(ms_cmd_t *head, ms_cmd_t *node);
+
+extern void ms_cmd_dbg_print_tree(ms_cmd_t *tree);
 
 extern void ms_cmd_dbg_print(ms_cmd_t *cmd);
 

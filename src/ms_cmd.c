@@ -71,6 +71,33 @@ void ms_cmd_destroy(ms_cmd_t *cmd) {
     free(cmd);
 }
 
+ms_status_t ms_cmd_show_cmd_help(ms_cmd_t *tree, unsigned char *cmd_path, size_t path_size) {
+    int i;
+    ms_cmd_t *next_level = tree;
+    ms_cmd_t *next_level_head = NULL;
+
+    for(i = 0; i < path_size && cmd_path[i] != 0; i++) {
+        while(next_level) {
+            if(next_level->cmd_id == cmd_path[i]) {
+                next_level = next_level->children;
+                break;
+            }
+            next_level = next_level->next;
+        }
+    }
+    
+    next_level_head = next_level;
+    while(next_level_head->prev)
+        next_level_head = next_level_head->prev;
+
+    while(next_level_head) {
+        ms_log(log_dbg, "%-10s\t\t%s", next_level_head->cmd, next_level_head->help);
+        next_level_head = next_level_head->next;
+    }
+
+    return ms_st_ok;
+}
+
 ms_status_t ms_cmd_hook_as_child(ms_cmd_t *parent, ms_cmd_t *child) {
     ms_status_t ret;
 
@@ -100,6 +127,64 @@ ms_status_t ms_cmd_hook_at_end(ms_cmd_t *head, ms_cmd_t *node) {
     node->prev = head;
 
     return ms_st_ok;
+}
+
+#define     register_command(id, cmd, help)         { \
+                                                    ms_log(log_dbg, "Adding command: %s", cmd); \
+                                                    tmp = ms_cmd_create(id, cmd, help, "1-24", "Help arg", NULL); \
+                                                    if(cur_cmd == NULL) {\
+                                                        *command_tree = cur_cmd = tmp; \
+                                                    } else { \
+                                                        if(sub_command == 0) { \
+                                                            ms_cmd_hook_at_end(cur_cmd, tmp); \
+                                                            tmp->parent = cur_cmd->parent; \
+                                                            cur_cmd = cur_cmd->next; \
+                                                        } else { \
+                                                            ms_cmd_hook_as_child(cur_cmd, tmp); \
+                                                            cur_cmd = cur_cmd->children; \
+                                                            sub_command = 0; \
+                                                        } \
+                                                    } \
+                                                    ms_cmd_dbg_print(tmp); \
+                                                }
+
+#define     sub_command_start()                 { sub_command = 1; }
+
+#define     sub_command_end()                   { cur_cmd = cur_cmd->parent; }
+
+void ms_load_commands(ms_cmd_t **command_tree) {
+    ms_cmd_t *cur_cmd = NULL;
+    ms_cmd_t *tmp = NULL;
+    int sub_command = 0;
+
+    register_command(0x01, "enable", "Turn on privileged commands");
+    register_command(0x02, "disable", "Turn off privileged commands");
+    register_command(0x03, "show", "Show system running configuration");
+      sub_command_start();
+      register_command(0x01, "ip", "Show IP infromations");
+      register_command(0x02, "vlan", "Show VLAN infromations");
+        sub_command_start();
+        register_command(0x01, "brief", "Show VLAN infromations in brief");
+        register_command(0x02, "id", "Show VLAN infromation by VLAN ID");
+        register_command(0x03, "name", "Show VLAN infromation by name");
+        sub_command_end();
+      register_command(0x03, "mac", "Show MAC infromation");
+      sub_command_end();
+    register_command(0x04, "connect", "Open terminal connection");
+    register_command(0x05, "en-test", "Open terminal connection");
+
+    ms_log(log_dbg, "----------Command Register completed---------");
+}
+
+void ms_cmd_dbg_print_tree(ms_cmd_t *tree) {
+    while(tree) {
+        ms_cmd_dbg_print(tree);
+        if(tree->children)
+            tree = tree->children;
+        if(tree->next == NULL)
+            tree = tree->parent;
+        tree = tree->next;
+    }
 }
 
 void ms_cmd_dbg_print(ms_cmd_t *cmd) {

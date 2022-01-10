@@ -3,7 +3,10 @@
 
 #include "ms_entry.h"
 #include "ms_log.h"
+#include "ms_cmd.h"
 
+
+static unsigned char cmd_path[MAX_SUB_COMMANDS] = {0};
 
 void configure_stdin() {
     struct termios info;
@@ -19,10 +22,12 @@ int main(int argc, char *argv[]) {
     char ch;
     ms_entry_t *entry, *tmp;
     ms_entry_t *head;
+    ms_cmd_t *cmd_tree = NULL;
 
     ms_log(log_dbg, "\033[2J");
     head = entry = ms_entry_create(EMPTY_STR);
     ms_entry_set_prefix(entry, "(Switch)>");
+    ms_load_commands(&cmd_tree);
     configure_stdin();
 
     ms_print_entry(entry);
@@ -30,10 +35,9 @@ int main(int argc, char *argv[]) {
         ch = getchar();
         switch(ch) {
             case '?':           // Help
+                ms_cmd_show_cmd_help(cmd_tree, cmd_path, sizeof(cmd_path));
                 break;
-            case 7:
-                ms_log(log_dbg, "======Forward direction=====");
-                ms_dbg_print_history(head, 1);
+            case 7:             // Ctrl + G - Debug option
                 break;
             case 0x7f:          // Backspace
                 ms_entry_remove_char(entry);

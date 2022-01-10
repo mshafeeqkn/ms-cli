@@ -72,62 +72,66 @@ void *test_function_enable(void* args) {
 }
 
 
-void test_ms_cmd() {
-    ms_cmd_t *cmd0 = ms_cmd_create(0x1, "enable", "Enable privileged commands",
+ms_cmd_t* pre_test_ms_cmd() {
+    ms_cmd_t *cmd01 = ms_cmd_create(0x01, "enable", "Enable privileged commands",
                                   "<0-1>", "This is the dummy arg help",
                                   test_function_enable);
 
-    ms_cmd_t *cmd1 = ms_cmd_create(0x2, "show  ", "Show running system informations",
+    ms_cmd_t *cmd02 = ms_cmd_create(0x02, "show  ", "Show running system informations",
                                    "<0-1>", "This is the dummy arg help",
                                    test_function_enable);
-    ms_cmd_t *cmd11 = ms_cmd_create(0x20, "ip    ", "Show IP infromations",
+    ms_cmd_t *cmd0201 = ms_cmd_create(0x01, "ip    ", "Show IP infromations",
                                     "<0-1>", "This is the dummy arg help",
                                     test_function_enable);
-    ms_cmd_t *cmd12 = ms_cmd_create(0x21, "vlan  ", "Show VLAN infromations",
+    ms_cmd_t *cmd0202 = ms_cmd_create(0x02, "vlan  ", "Show VLAN infromations",
                                     "<0-1>", "This is the dummy arg help",
                                     test_function_enable);
-    ms_cmd_t *cmd120 = ms_cmd_create(0x210, "brief", "Show VLAN infromations in brief",
+    ms_cmd_t *cmd020201 = ms_cmd_create(0x01, "brief", "Show VLAN infromations in brief",
                                      "<0-1>", "This is the dummy arg help",
                                      test_function_enable);
-    ms_cmd_t *cmd121 = ms_cmd_create(0x211, "id   ", "Show VLAN infromation by VLAN ID",
+    ms_cmd_t *cmd020202 = ms_cmd_create(0x02, "id   ", "Show VLAN infromation by VLAN ID",
                                      "<0-1>", "This is the dummy arg help",
                                      test_function_enable);
-    ms_cmd_t *cmd122 = ms_cmd_create(0x212, "name  ", "Show VLAN infromation by name",
+    ms_cmd_t *cmd020203 = ms_cmd_create(0x03, "name  ", "Show VLAN infromation by name",
                                      "<0-1>", "This is the dummy arg help",
                                      test_function_enable);
-    ms_cmd_t *cmd13 = ms_cmd_create(0x22, "mac  ", "Show MAC infromation",
+    ms_cmd_t *cmd0203 = ms_cmd_create(0x03, "mac  ", "Show MAC infromation",
                                     "<0-1>", "This is the dummy arg help",
                                     test_function_enable);
 
-    ms_cmd_t *cmd2 = ms_cmd_create(0x3, "disable", "Turn off privileged commands",
-                                   "<0-1>", "This is the dummy arg help",
-                                   test_function_enable);
-
-    ms_cmd_t *cmd3 = ms_cmd_create(0x4, "connect", "Open terminal connection",
+    ms_cmd_t *cmd03 = ms_cmd_create(0x03, "disable", "Turn off privileged commands",
                                    "<0-1>", "This is the dummy arg help",
                                    test_function_enable);
 
-    ms_cmd_hook_at_end(cmd0, cmd1); //show
-      ms_cmd_hook_as_child(cmd1, cmd11);    // show ip
-      ms_cmd_hook_as_child(cmd1, cmd12);    // show vlan
-        ms_cmd_hook_as_child(cmd12, cmd120);    // show vlan breif
-        ms_cmd_hook_as_child(cmd12, cmd121);    // show vlan id
-        ms_cmd_hook_as_child(cmd12, cmd122);    // show vlan name
-      ms_cmd_hook_as_child(cmd1, cmd13);    // show mac
-    ms_cmd_hook_at_end(cmd0, cmd2); //disable
-    ms_cmd_hook_at_end(cmd0, cmd3); // connect
+    ms_cmd_t *cmd04 = ms_cmd_create(0x04, "connect", "Open terminal connection",
+                                   "<0-1>", "This is the dummy arg help",
+                                   test_function_enable);
 
-    ms_cmd_dbg_print(cmd0);
-    ms_cmd_dbg_print(cmd1);
-    ms_cmd_dbg_print(cmd11);
-    ms_cmd_dbg_print(cmd12);
-    ms_cmd_dbg_print(cmd120);
-    ms_cmd_dbg_print(cmd121);
-    ms_cmd_dbg_print(cmd122);
-    ms_cmd_dbg_print(cmd13);
-    ms_cmd_dbg_print(cmd2);
-    ms_cmd_dbg_print(cmd3);
+    ms_cmd_hook_at_end(cmd01, cmd02); //show
+      ms_cmd_hook_as_child(cmd02, cmd0201);    // show ip
+      ms_cmd_hook_as_child(cmd02, cmd0202);    // show vlan
+        ms_cmd_hook_as_child(cmd0202, cmd020201);    // show vlan breif
+        ms_cmd_hook_as_child(cmd0202, cmd020202);    // show vlan id
+        ms_cmd_hook_as_child(cmd0202, cmd020203);    // show vlan name
+      ms_cmd_hook_as_child(cmd02, cmd0203);    // show mac
+    ms_cmd_hook_at_end(cmd01, cmd03); //disable
+    ms_cmd_hook_at_end(cmd01, cmd04); // connect
+
+    ms_cmd_dbg_print(cmd01);
+    ms_cmd_dbg_print(cmd02);
+    ms_cmd_dbg_print(cmd0201);
+    ms_cmd_dbg_print(cmd0202);
+    ms_cmd_dbg_print(cmd020201);
+    ms_cmd_dbg_print(cmd020202);
+    ms_cmd_dbg_print(cmd020203);
+    ms_cmd_dbg_print(cmd0203);
+    ms_cmd_dbg_print(cmd03);
+    ms_cmd_dbg_print(cmd04);
+
+    return cmd01;
 }
+
+static unsigned char cmd_path[MAX_SUB_COMMANDS] = {0};
 
 int main(int argc, char *argv[]) {
     ms_log(log_dbg, "\033[2J");
@@ -138,7 +142,10 @@ int main(int argc, char *argv[]) {
         ms_log(log_dbg, "============The test test_regsiter_after failed============");
 #endif
 
-    test_ms_cmd();
-
+    ms_log(log_dbg, "int : %d, long long int: %d", sizeof(int), sizeof(unsigned long long));
+    cmd_path[0] = 0x02;
+    cmd_path[1] = 0x02;
+    ms_cmd_t *tree = pre_test_ms_cmd();
+    ms_cmd_show_cmd_help(tree, cmd_path, sizeof(cmd_path));
     return 0;
 }
