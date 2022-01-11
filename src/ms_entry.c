@@ -42,12 +42,33 @@ void _ms_dbg_print_entry(char *pref, ms_entry_t *entry) {
         entry->prefix, entry->str, entry->len, entry->cursor);
 }
 
+ms_status_t ms_entry_set_string(ms_entry_t *entry, char *command) {
+    int cmd_len;
+
+    if(!entry || !command)
+        return -ms_st_null_arg;
+
+    cmd_len = strlen(command);
+    free(entry->str);
+    entry->str = malloc(cmd_len + 1);
+    if(!entry->str)
+        return -ms_st_mem_err;
+
+    strncpy(entry->str, command, cmd_len);
+    entry->str[cmd_len] = 0;
+    entry->len = cmd_len;
+    entry->cursor = cmd_len;
+    return ms_st_ok;
+}
+
 ms_status_t ms_entry_set_prefix(ms_entry_t *entry, char *prefix) {
-    int pref_len = strlen(prefix);
+    int pref_len;
 
     if(!entry || !prefix)
         return -ms_st_null_arg;
 
+    pref_len = strlen(prefix);
+    // TODO: Free existing mem
     entry->prefix = malloc(pref_len + 1);
     if(!entry->prefix)
         return -ms_st_mem_err;

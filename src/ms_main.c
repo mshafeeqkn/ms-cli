@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <termios.h>
 
 #include "ms_entry.h"
@@ -18,8 +19,43 @@ void configure_stdin() {
     tcsetattr(0, TCSANOW, &info);       /* set immediately */
 }
 
+ms_status_t ms_get_matching_commands(ms_cmd_t *cmd_tree, ms_entry_t *entry, char*** commands, int *size) {
+    int i = 0;
+    char *cmds[MAX_SUB_COMMANDS] = {0};
+
+    for(i = 0; i < MAX_SUB_COMMANDS && cmd_path[i]; i++) {
+        while(cmd_tree->cmd_id != cmd_path[i])
+            cmd_tree = cmd_tree->next;
+        cmd_tree = cmd_tree->children;
+    }
+
+    i = 0;
+    while(cmd_tree) {
+        if(strncmp(cmd_tree->cmd, entry->str, entry->len) == 0)
+            cmds[i++] = cmd_tree->cmd;
+        cmd_tree = cmd_tree->next;
+    }
+
+    *commands = (char**) malloc(i * sizeof(char*));
+
+    i = 0;
+    while(cmds[i] != 0) {
+        (*commands)[i] = cmds[i];
+        i++;
+    }
+
+    *size = i;
+    if(i == 0)
+        return -ms_st_none;
+
+    return ms_st_ok;
+}
+
+
 int main(int argc, char *argv[]) {
     char ch;
+    char **commands;
+    int num_cmds;
     ms_entry_t *entry, *tmp;
     ms_entry_t *head;
     ms_cmd_t *cmd_tree = NULL;
@@ -35,7 +71,8 @@ int main(int argc, char *argv[]) {
         ch = getchar();
         switch(ch) {
             case '?':           // Help
-                ms_cmd_show_cmd_help(cmd_tree, cmd_path, sizeof(cmd_path));
+                putchar(ch);
+                ms_cmd_show_cmd_help(cmd_tree, entry, cmd_path, sizeof(cmd_path));
                 break;
             case 7:             // Ctrl + G - Debug option
                 break;
@@ -43,9 +80,14 @@ int main(int argc, char *argv[]) {
                 ms_entry_remove_char(entry);
                 break;
             case '\t':          // Tab
-                // if(ms_get_matching_commands(entry)) {
-                // }
-                putchar('\n');
+                if(ms_get_matching_commands(cmd_tree, entry, &commands, &num_cmds) == ms_st_ok) {
+                    if(num_cmds == 1)
+                        ms_entry_set_string(entry, commands[0]);
+                    else
+                        putchar('\n');
+                } else {
+                    putchar('\n');
+                }
                 break;
             case '\n':          // Return
                 if(entry->str[0]) {

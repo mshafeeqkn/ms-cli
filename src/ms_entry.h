@@ -52,6 +52,9 @@ extern void _ms_dbg_print_entry(char *pref, ms_entry_t *entry);
  * @param entry: the entry structure.
  * @param prefix: The prefix
  */
+extern ms_status_t ms_entry_set_string(ms_entry_t *entry, char *command);
+
+
 extern ms_status_t ms_entry_set_prefix(ms_entry_t *entry, char *prefix);
 
 /**

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
 
@@ -24,11 +25,10 @@ ms_cmd_t* ms_cmd_create(unsigned int cmd_id,
 
     cmd->cmd_id = cmd_id;
 
-    cmd->cmd = malloc(cmd_len + 1);
+    cmd->cmd = malloc(cmd_len + 2);
     if(cmd->cmd == NULL)
         goto err_cmd;
-    strncpy(cmd->cmd, cmd_str, cmd_len);
-    cmd->cmd[cmd_len] = 0;
+    snprintf(cmd->cmd, cmd_len+2, "%s ", cmd_str);
 
     cmd->help = malloc(help_len + 1);
     if(cmd->help == NULL)
@@ -71,7 +71,7 @@ void ms_cmd_destroy(ms_cmd_t *cmd) {
     free(cmd);
 }
 
-ms_status_t ms_cmd_show_cmd_help(ms_cmd_t *tree, unsigned char *cmd_path, size_t path_size) {
+ms_status_t ms_cmd_show_cmd_help(ms_cmd_t *tree, ms_entry_t *entry, unsigned char *cmd_path, size_t path_size) {
     int i;
     ms_cmd_t *next_level = tree;
     ms_cmd_t *next_level_head = NULL;
@@ -91,10 +91,11 @@ ms_status_t ms_cmd_show_cmd_help(ms_cmd_t *tree, unsigned char *cmd_path, size_t
         next_level_head = next_level_head->prev;
 
     while(next_level_head) {
-        ms_log(log_dbg, "%-10s\t\t%s", next_level_head->cmd, next_level_head->help);
+        if(entry->len == 0 || strncmp(next_level_head->cmd, entry->str, entry->len) == 0)
+            printf("\n%-10s\t\t%s", next_level_head->cmd, next_level_head->help);
         next_level_head = next_level_head->next;
     }
-
+    putchar('\n');
     return ms_st_ok;
 }
 
@@ -168,7 +169,7 @@ void ms_load_commands(ms_cmd_t **command_tree) {
         register_command(0x02, "id", "Show VLAN infromation by VLAN ID");
         register_command(0x03, "name", "Show VLAN infromation by name");
         sub_command_end();
-      register_command(0x03, "mac", "Show MAC infromation");
+      register_command(0x03, "mac ", "Show MAC infromation");
       sub_command_end();
     register_command(0x04, "connect", "Open terminal connection");
     register_command(0x05, "en-test", "Open terminal connection");
