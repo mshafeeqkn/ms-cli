@@ -5,7 +5,7 @@
 #include "ms_entry.h"
 #include "ms_log.h"
 #include "ms_cmd.h"
-
+#if 0
 ms_status_t test_regsiter_after() {
     ms_status_t ret;
     int i;
@@ -133,6 +133,20 @@ ms_cmd_t* pre_test_ms_cmd() {
 
 static unsigned char cmd_path[MAX_SUB_COMMANDS] = {0};
 
+#endif
+void test_strrchr() {
+    char *tmp = "show test ";
+    int len = strlen(tmp);
+    char *last = tmp + len - 1;
+
+    while(*last == ' ' && last != tmp) last--;
+    while(*last != ' ' && last != tmp) last--;
+    if(*last == ' ') last++;
+
+    printf("Output = [%s]\n", last);
+}
+
+
 int main(int argc, char *argv[]) {
     ms_log(log_dbg, "\033[2J");
 #if 0
@@ -140,7 +154,6 @@ int main(int argc, char *argv[]) {
     ret = test_regsiter_after();
     if(ret != ms_st_ok)
         ms_log(log_dbg, "============The test test_regsiter_after failed============");
-#endif
 
     ms_log(log_dbg, "int : %d, long long int: %d", sizeof(int), sizeof(unsigned long long));
     cmd_path[0] = 0x02;
@@ -148,4 +161,6 @@ int main(int argc, char *argv[]) {
     ms_cmd_t *tree = pre_test_ms_cmd();
     ms_cmd_show_cmd_help(tree, cmd_path, sizeof(cmd_path));
     return 0;
+#endif
+    test_strrchr();
 }

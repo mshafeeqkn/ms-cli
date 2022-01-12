@@ -44,20 +44,22 @@ void _ms_dbg_print_entry(char *pref, ms_entry_t *entry) {
 
 ms_status_t ms_entry_set_string(ms_entry_t *entry, char *command) {
     int cmd_len;
+    char *tmp;
+    char *cmd;
+    int len, buff_len;
 
     if(!entry || !command)
         return -ms_st_null_arg;
 
     cmd_len = strlen(command);
+    ms_entry_get_last_command(entry, &cmd, &len);
+    buff_len = entry->len - len + cmd_len;
+    tmp = malloc(buff_len + 1);
+    snprintf(tmp, buff_len + 1, "%s%s", entry->str, command+len);
     free(entry->str);
-    entry->str = malloc(cmd_len + 1);
-    if(!entry->str)
-        return -ms_st_mem_err;
-
-    strncpy(entry->str, command, cmd_len);
-    entry->str[cmd_len] = 0;
-    entry->len = cmd_len;
-    entry->cursor = cmd_len;
+    entry->str = tmp;
+    entry->len = buff_len;
+    entry->cursor = buff_len;
     return ms_st_ok;
 }
 
@@ -238,6 +240,35 @@ ms_status_t ms_entry_copy_to_list_end(ms_entry_t *head, ms_entry_t *node) {
     tmp->prev = tail;
     ret = ms_entry_copy_data(tmp, node);
     return ret;
+}
+
+ms_status_t ms_entry_get_last_command(ms_entry_t *entry, char **cmd, int *len) {
+    if(entry->str[entry->len-1] == ' ') {
+        *cmd = NULL;
+        *len = 0;
+    } else {
+        *cmd = strrchr(entry->str, ' ');
+        if(*cmd == NULL) {
+            *cmd = entry->str;
+            *len = strlen(entry->str);
+        } else {
+            (*cmd)++;
+            *len = strlen(*cmd);
+        }
+    }
+    return ms_st_ok;
+}
+
+ms_status_t ms_entry_get_prev_command(ms_entry_t *entry, char **cmd, int *len) {
+    char *last = entry->str + entry->len - 1;
+
+    while(*last == ' ' && last != entry->str) last--;
+    while(*last != ' ' && last != entry->str) last--;
+    if(*last == ' ') last++;
+
+    *cmd = last;
+    *len = strlen(*cmd);
+    return ms_st_ok;
 }
 
 void ms_dbg_print_history(ms_entry_t *entry, int fw) {

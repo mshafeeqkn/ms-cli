@@ -7,8 +7,6 @@
 #include "ms_cmd.h"
 
 
-static unsigned char cmd_path[MAX_SUB_COMMANDS] = {0};
-
 void configure_stdin() {
     struct termios info;
 
@@ -19,21 +17,18 @@ void configure_stdin() {
     tcsetattr(0, TCSANOW, &info);       /* set immediately */
 }
 
-ms_status_t ms_get_matching_commands(ms_cmd_t *cmd_tree, ms_entry_t *entry, char*** commands, int *size) {
+ms_status_t ms_get_matching_commands(ms_cmd_t *cmd_head, ms_entry_t *entry, char ***commands, int *size) {
     int i = 0;
     char *cmds[MAX_SUB_COMMANDS] = {0};
+    char *cmd;
+    int len;
 
-    for(i = 0; i < MAX_SUB_COMMANDS && cmd_path[i]; i++) {
-        while(cmd_tree->cmd_id != cmd_path[i])
-            cmd_tree = cmd_tree->next;
-        cmd_tree = cmd_tree->children;
-    }
-
-    i = 0;
-    while(cmd_tree) {
-        if(strncmp(cmd_tree->cmd, entry->str, entry->len) == 0)
-            cmds[i++] = cmd_tree->cmd;
-        cmd_tree = cmd_tree->next;
+    ms_entry_get_last_command(entry, &cmd, &len);
+    while(cmd_head) {
+        if(strncmp(cmd_head->cmd, cmd, len) == 0) {
+            cmds[i++] = cmd_head->cmd;
+        }
+        cmd_head = cmd_head->next;
     }
 
     *commands = (char**) malloc(i * sizeof(char*));
@@ -51,7 +46,6 @@ ms_status_t ms_get_matching_commands(ms_cmd_t *cmd_tree, ms_entry_t *entry, char
     return ms_st_ok;
 }
 
-
 int main(int argc, char *argv[]) {
     char ch;
     char **commands;
@@ -59,11 +53,13 @@ int main(int argc, char *argv[]) {
     ms_entry_t *entry, *tmp;
     ms_entry_t *head;
     ms_cmd_t *cmd_tree = NULL;
+    ms_cmd_t *cmd_head;
 
     ms_log(log_dbg, "\033[2J");
     head = entry = ms_entry_create(EMPTY_STR);
     ms_entry_set_prefix(entry, "(Switch)>");
     ms_load_commands(&cmd_tree);
+    cmd_head = cmd_tree;
     configure_stdin();
 
     ms_print_entry(entry);
@@ -72,7 +68,7 @@ int main(int argc, char *argv[]) {
         switch(ch) {
             case '?':           // Help
                 putchar(ch);
-                ms_cmd_show_cmd_help(cmd_tree, entry, cmd_path, sizeof(cmd_path));
+                ms_cmd_show_cmd_help(cmd_head, entry);
                 break;
             case 7:             // Ctrl + G - Debug option
                 break;
@@ -80,11 +76,12 @@ int main(int argc, char *argv[]) {
                 ms_entry_remove_char(entry);
                 break;
             case '\t':          // Tab
-                if(ms_get_matching_commands(cmd_tree, entry, &commands, &num_cmds) == ms_st_ok) {
-                    if(num_cmds == 1)
+                if(ms_get_matching_commands(cmd_head, entry, &commands, &num_cmds) == ms_st_ok) {
+                    if(num_cmds == 1) {
                         ms_entry_set_string(entry, commands[0]);
-                    else
+                    } else {
                         putchar('\n');
+                    }
                 } else {
                     putchar('\n');
                 }
@@ -130,6 +127,12 @@ int main(int argc, char *argv[]) {
                 break;
         }
         ms_print_entry(entry);
+        if(entry->str[entry->len - 1] == ' ') {
+            ms_cmd_t *tmp = ms_cmd_get_next_level_head(cmd_head, entry);
+            if(tmp != NULL) {
+                cmd_head = tmp;
+            }
+        }
     }
 
     ms_entry_free(entry);

@@ -71,30 +71,20 @@ void ms_cmd_destroy(ms_cmd_t *cmd) {
     free(cmd);
 }
 
-ms_status_t ms_cmd_show_cmd_help(ms_cmd_t *tree, ms_entry_t *entry, unsigned char *cmd_path, size_t path_size) {
-    int i;
-    ms_cmd_t *next_level = tree;
-    ms_cmd_t *next_level_head = NULL;
+ms_status_t ms_cmd_show_cmd_help(ms_cmd_t *head, ms_entry_t *entry) {
+    char *cmd;
+    int len;
 
-    for(i = 0; i < path_size && cmd_path[i] != 0; i++) {
-        while(next_level) {
-            if(next_level->cmd_id == cmd_path[i]) {
-                next_level = next_level->children;
-                break;
-            }
-            next_level = next_level->next;
-        }
+    if(ms_entry_get_last_command(entry, &cmd, &len) != ms_st_ok) {
+        return -ms_st_fail;
     }
-    
-    next_level_head = next_level;
-    while(next_level_head->prev)
-        next_level_head = next_level_head->prev;
 
-    while(next_level_head) {
-        if(entry->len == 0 || strncmp(next_level_head->cmd, entry->str, entry->len) == 0)
-            printf("\n%-10s\t\t%s", next_level_head->cmd, next_level_head->help);
-        next_level_head = next_level_head->next;
+    while(head) {
+        if(len == 0 || strncmp(head->cmd, cmd, len) == 0)
+            printf("\n%-10s\t\t%s", head->cmd, head->help);
+        head = head->next;
     }
+
     putchar('\n');
     return ms_st_ok;
 }
@@ -175,6 +165,21 @@ void ms_load_commands(ms_cmd_t **command_tree) {
     register_command(0x05, "en-test", "Open terminal connection");
 
     ms_log(log_dbg, "----------Command Register completed---------");
+}
+
+ms_cmd_t* ms_cmd_get_next_level_head(ms_cmd_t *cur_head, ms_entry_t *entry) {
+    char *prev_cmd;
+    int prev_cmd_len;
+
+    ms_entry_get_prev_command(entry, &prev_cmd, &prev_cmd_len);
+    while(cur_head != NULL && strncmp(cur_head->cmd, prev_cmd, prev_cmd_len) != 0) {
+        cur_head = cur_head->next;
+    }
+
+    if(cur_head == NULL)
+        return NULL;
+
+    return cur_head->children;
 }
 
 void ms_cmd_dbg_print_tree(ms_cmd_t *tree) {
