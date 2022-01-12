@@ -25,7 +25,8 @@ typedef enum {
     ms_st_inval_arg,
     ms_st_limit_exhaust,
     ms_st_unknown,
-    ms_st_none
+    ms_st_none,
+    ms_st_not_found
 } ms_status_t;
 
 #endif

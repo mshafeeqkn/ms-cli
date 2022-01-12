@@ -75,6 +75,11 @@ ms_status_t ms_cmd_show_cmd_help(ms_cmd_t *head, ms_entry_t *entry) {
     char *cmd;
     int len;
 
+    if(head == NULL && entry != NULL) {
+        printf("\n<cr>\n");
+        return ms_st_ok;
+    }
+
     if(ms_entry_get_last_command(entry, &cmd, &len) != ms_st_ok) {
         return -ms_st_fail;
     }
@@ -167,7 +172,7 @@ void ms_load_commands(ms_cmd_t **command_tree) {
     ms_log(log_dbg, "----------Command Register completed---------");
 }
 
-ms_cmd_t* ms_cmd_get_next_level_head(ms_cmd_t *cur_head, ms_entry_t *entry) {
+ms_status_t ms_cmd_get_next_level_head(ms_cmd_t *cur_head, ms_entry_t *entry, ms_cmd_t **out) {
     char *prev_cmd;
     int prev_cmd_len;
 
@@ -177,9 +182,10 @@ ms_cmd_t* ms_cmd_get_next_level_head(ms_cmd_t *cur_head, ms_entry_t *entry) {
     }
 
     if(cur_head == NULL)
-        return NULL;
+        return -ms_st_not_found;
 
-    return cur_head->children;
+    *out = cur_head->children;
+    return ms_st_ok;
 }
 
 void ms_cmd_dbg_print_tree(ms_cmd_t *tree) {

@@ -102,6 +102,7 @@ int main(int argc, char *argv[]) {
                     entry = tmp;
                 }
                 putchar('\n');
+                cmd_head = cmd_tree;
                 break;
             case 0x1b:
                 getchar();      // Discard [
@@ -128,8 +129,9 @@ int main(int argc, char *argv[]) {
         }
         ms_print_entry(entry);
         if(entry->str[entry->len - 1] == ' ') {
-            ms_cmd_t *tmp = ms_cmd_get_next_level_head(cmd_head, entry);
-            if(tmp != NULL) {
+            ms_cmd_t *tmp;
+            ms_status_t ret = ms_cmd_get_next_level_head(cmd_head, entry, &tmp);
+            if(ret == ms_st_ok) {
                 cmd_head = tmp;
             }
         }
