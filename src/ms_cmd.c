@@ -172,21 +172,38 @@ void ms_load_commands(ms_cmd_t **command_tree) {
     ms_log(log_dbg, "----------Command Register completed---------");
 }
 
-ms_status_t ms_cmd_get_next_level_head(ms_cmd_t *cur_head, ms_entry_t *entry, ms_cmd_t **out) {
-    char *prev_cmd;
-    int prev_cmd_len;
+static ms_cmd_t* get_cmd_from_str(ms_cmd_t *head, char *cmd) {
+    char tmp[128] = {0};
 
-    ms_entry_get_prev_command(entry, &prev_cmd, &prev_cmd_len);
-    while(cur_head != NULL && strncmp(cur_head->cmd, prev_cmd, prev_cmd_len) != 0) {
-        cur_head = cur_head->next;
+    sprintf(tmp, "%s ", cmd);
+    while(head) {
+        ms_log(log_dbg, "comparing [%s] and [%s]", head->cmd, tmp);
+        if(strcmp(head->cmd, tmp) == 0)
+            return head;
+        head = head->next;
     }
-
-    if(cur_head == NULL)
-        return -ms_st_not_found;
-
-    *out = cur_head->children;
-    return ms_st_ok;
+    return NULL;
 }
+
+void ms_cmd_update_cmd_head(ms_cmd_t *cmd_tree, ms_entry_t *entry, ms_cmd_t **cmd_head) {
+    const char del[2] = " ";
+    char *tok;
+    char command[1024] = {0};
+    ms_cmd_t *tmp;
+
+    *cmd_head = cmd_tree;
+    ms_dbg_print_entry(entry);
+    strncpy(command, entry->str, entry->len);
+    tok = strtok(command, del);
+    while(tok != NULL) {
+        tmp = get_cmd_from_str(*cmd_head, tok);
+        ms_log(log_dbg, "[%x]the command for token: %s is %x", addr(*cmd_head), tok, addr(tmp));
+        if(tmp != NULL)
+            *cmd_head = tmp->children;
+        tok = strtok(NULL, del);
+    }
+}
+
 
 void ms_cmd_dbg_print_tree(ms_cmd_t *tree) {
     while(tree) {
