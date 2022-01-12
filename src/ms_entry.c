@@ -259,18 +259,6 @@ ms_status_t ms_entry_get_last_command(ms_entry_t *entry, char **cmd, int *len) {
     return ms_st_ok;
 }
 
-ms_status_t ms_entry_get_prev_command(ms_entry_t *entry, char **cmd, int *len) {
-    char *last = entry->str + entry->len - 1;
-
-    while(*last == ' ' && last != entry->str) last--;
-    while(*last != ' ' && last != entry->str) last--;
-    if(*last == ' ') last++;
-
-    *cmd = last;
-    *len = strlen(*cmd);
-    return ms_st_ok;
-}
-
 void ms_dbg_print_history(ms_entry_t *entry, int fw) {
     while(entry) {
          ms_dbg_print_entry(entry);

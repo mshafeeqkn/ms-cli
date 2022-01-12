@@ -154,6 +154,5 @@ extern ms_status_t ms_entry_copy_to_list_end(ms_entry_t *head, ms_entry_t *node)
 extern ms_status_t ms_entry_copy_data(ms_entry_t *dest, ms_entry_t *src);
 
 extern ms_status_t ms_entry_get_last_command(ms_entry_t *entry, char **cmd, int *len);
-extern ms_status_t ms_entry_get_prev_command(ms_entry_t *entry, char **cmd, int *len);
 
 #endif /* __MS_CONSOLE_H__ */
