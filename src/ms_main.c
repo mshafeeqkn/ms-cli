@@ -23,13 +23,12 @@ void ms_complete_command(ms_cmd_t *cmd_tree, ms_entry_t *entry) {
 
 int main(int argc, char *argv[]) {
     char ch;
-    char **commands;
-    int num_cmds;
     ms_entry_t *entry, *tmp;
     ms_entry_t *head;
     ms_cmd_t *cmd_tree = NULL;
     ms_cmd_t *cmd_head;
 
+    ms_log_load_log_file();
     ms_log(log_dbg, "\033[2J");
     head = entry = ms_entry_create(EMPTY_STR);
     ms_entry_set_prefix(entry, "(Switch)>");

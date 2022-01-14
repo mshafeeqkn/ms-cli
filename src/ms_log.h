@@ -15,4 +15,6 @@ typedef enum {
 
 extern void _ms_log(log_level_t level, char *file, int line,  const char* format, ...);
 
+extern void ms_log_load_log_file();
+
 #endif
