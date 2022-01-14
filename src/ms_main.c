@@ -5,6 +5,7 @@
 #include "ms_entry.h"
 #include "ms_log.h"
 #include "ms_cmd.h"
+#include "ms_mem.h"
 
 
 void configure_stdin() {
@@ -17,33 +18,7 @@ void configure_stdin() {
     tcsetattr(0, TCSANOW, &info);       /* set immediately */
 }
 
-ms_status_t ms_get_matching_commands(ms_cmd_t *cmd_head, ms_entry_t *entry, char ***commands, int *size) {
-    int i = 0;
-    char *cmds[MAX_SUB_COMMANDS] = {0};
-    char *cmd;
-    int len;
-
-    ms_entry_get_last_command(entry, &cmd, &len);
-    while(cmd_head) {
-        if(strncmp(cmd_head->cmd, cmd, len) == 0) {
-            cmds[i++] = cmd_head->cmd;
-        }
-        cmd_head = cmd_head->next;
-    }
-
-    *commands = (char**) malloc(i * sizeof(char*));
-
-    i = 0;
-    while(cmds[i] != 0) {
-        (*commands)[i] = cmds[i];
-        i++;
-    }
-
-    *size = i;
-    if(i == 0)
-        return -ms_st_none;
-
-    return ms_st_ok;
+void ms_complete_command(ms_cmd_t *cmd_tree, ms_entry_t *entry) {
 }
 
 int main(int argc, char *argv[]) {
@@ -76,15 +51,7 @@ int main(int argc, char *argv[]) {
                 ms_entry_remove_char(entry);
                 break;
             case '\t':          // Tab
-                if(ms_get_matching_commands(cmd_head, entry, &commands, &num_cmds) == ms_st_ok) {
-                    if(num_cmds == 1) {
-                        ms_entry_set_string(entry, commands[0]);
-                    } else {
-                        putchar('\n');
-                    }
-                } else {
-                    putchar('\n');
-                }
+                ms_complete_command(cmd_tree, entry);
                 break;
             case '\n':          // Return
                 if(entry->str[0]) {

@@ -42,6 +42,8 @@ extern ms_status_t ms_cmd_hook_at_end(ms_cmd_t *head, ms_cmd_t *node);
 
 extern void ms_cmd_update_cmd_head(ms_cmd_t *cmd_tree, ms_entry_t *entry, ms_cmd_t **cmd_head);
 
+extern ms_cmd_t* ms_cmd_get_cmd_from_str(ms_cmd_t *head, char *cmd);
+
 extern void ms_cmd_dbg_print_tree(ms_cmd_t *tree);
 
 extern void ms_cmd_dbg_print(ms_cmd_t *cmd);

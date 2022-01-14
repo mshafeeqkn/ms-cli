@@ -4,17 +4,18 @@
 #include "ms_entry.h"
 #include "ms_defines.h"
 #include "ms_log.h"
+#include "ms_mem.h"
 
 extern ms_entry_t* ms_entry_create(char *str) {
     int len = strlen(str);
 
-    ms_entry_t *ret = malloc(sizeof(ms_entry_t));
+    ms_entry_t *ret = ms_malloc(sizeof(ms_entry_t));
     if(!ret)
         return NULL;
 
-    ret->str = malloc(len + 1);
+    ret->str = ms_malloc(len + 1);
     if(!ret->str) {
-        free(ret);
+        ms_free(ret);
         return NULL;
     }
 
@@ -31,9 +32,9 @@ extern ms_entry_t* ms_entry_create(char *str) {
 }
 
 void ms_entry_free(ms_entry_t *entry) {
-    free(entry->str);
-    free(entry->prefix);
-    free(entry);
+    ms_free(entry->str);
+    ms_free(entry->prefix);
+    ms_free(entry);
 }
 
 void _ms_dbg_print_entry(char *pref, ms_entry_t *entry) {
@@ -54,9 +55,9 @@ ms_status_t ms_entry_set_string(ms_entry_t *entry, char *command) {
     cmd_len = strlen(command);
     ms_entry_get_last_command(entry, &cmd, &len);
     buff_len = entry->len - len + cmd_len;
-    tmp = malloc(buff_len + 1);
+    tmp = ms_malloc(buff_len + 1);
     snprintf(tmp, buff_len + 1, "%s%s", entry->str, command+len);
-    free(entry->str);
+    ms_free(entry->str);
     entry->str = tmp;
     entry->len = buff_len;
     entry->cursor = buff_len;
@@ -71,7 +72,7 @@ ms_status_t ms_entry_set_prefix(ms_entry_t *entry, char *prefix) {
 
     pref_len = strlen(prefix);
     // TODO: Free existing mem
-    entry->prefix = malloc(pref_len + 1);
+    entry->prefix = ms_malloc(pref_len + 1);
     if(!entry->prefix)
         return -ms_st_mem_err;
 
@@ -125,8 +126,8 @@ ms_status_t ms_entry_insert_char_at(ms_entry_t *entry, int pos, char ch) {
     if(ret != ms_st_ok)
         return ret;
 
-    free(entry->str);
-    entry->str = malloc(entry->len);
+    ms_free(entry->str);
+    entry->str = ms_malloc(entry->len);
     if(!entry->str)
         return -ms_st_mem_err;
 
@@ -190,19 +191,19 @@ ms_status_t ms_entry_copy_data(ms_entry_t *dst, ms_entry_t *src) {
     int pref_len = strlen(src->prefix);
 
     if(dst->str)
-        free(dst->str);
-    dst->str = calloc(src->len + 1, sizeof(char));
+        ms_free(dst->str);
+    dst->str = ms_malloc(src->len + 1);
     if(dst->str == NULL)
         return -ms_st_mem_err;
 
     if(dst->prefix)
-        free(dst->prefix);
-    dst->prefix = calloc(pref_len + 1, sizeof(char));
+        ms_free(dst->prefix);
+    dst->prefix = ms_malloc(pref_len + 1);
     if(dst->prefix == NULL)
         return -ms_st_mem_err;
 
-    strncpy(dst->str, src->str, src->len);
-    strncpy(dst->prefix, src->prefix, pref_len);
+    snprintf(dst->str, src->len, "%s", src->str);
+    snprintf(dst->prefix, pref_len, "%s", src->prefix);
     dst->len = src->len;
     dst->cursor = src->len;
 

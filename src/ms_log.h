@@ -10,6 +10,7 @@ typedef enum {
     log_err,
     log_info,
     log_dbg,
+    log_mem,
 } log_level_t;
 
 extern void _ms_log(log_level_t level, char *file, int line,  const char* format, ...);

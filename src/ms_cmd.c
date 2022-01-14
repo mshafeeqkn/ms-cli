@@ -4,6 +4,7 @@
 
 #include "ms_cmd.h"
 #include "ms_log.h"
+#include "ms_mem.h"
 
 
 ms_cmd_t* ms_cmd_create(unsigned int cmd_id,
@@ -19,30 +20,31 @@ ms_cmd_t* ms_cmd_create(unsigned int cmd_id,
     int arg_range_len = strlen(arg_range);
     int arg_help_len = strlen(arg_help);
 
-    cmd = calloc(1, sizeof(ms_cmd_t));
+    cmd = ms_malloc(sizeof(ms_cmd_t));
     if(cmd == NULL)
         return NULL;
 
+    memset(cmd, 0, sizeof(ms_cmd_t));
     cmd->cmd_id = cmd_id;
 
-    cmd->cmd = malloc(cmd_len + 2);
+    cmd->cmd = ms_malloc(cmd_len + 2);
     if(cmd->cmd == NULL)
         goto err_cmd;
     snprintf(cmd->cmd, cmd_len+2, "%s ", cmd_str);
 
-    cmd->help = malloc(help_len + 1);
+    cmd->help = ms_malloc(help_len + 1);
     if(cmd->help == NULL)
         goto err_help;
     strncpy(cmd->help, help, help_len);
     cmd->help[help_len] = 0;
 
-    cmd->arg_range = malloc(arg_range_len + 1);
+    cmd->arg_range = ms_malloc(arg_range_len + 1);
     if(cmd->arg_range == NULL)
         goto err_range;
     strncpy(cmd->arg_range, arg_range, arg_range_len);
     cmd->arg_range[help_len] = 0;
 
-    cmd->arg_help_str = malloc(arg_help_len + 1);
+    cmd->arg_help_str = ms_malloc(arg_help_len + 1);
     if(cmd->arg_help_str == NULL)
         goto err_arg_help;
     strncpy(cmd->arg_help_str, arg_help, arg_help_len);
@@ -52,23 +54,23 @@ ms_cmd_t* ms_cmd_create(unsigned int cmd_id,
     return cmd;
 
 err_arg_help:
-    free(arg_range);
+    ms_free(arg_range);
 err_range:
-    free(cmd->help);
+    ms_free(cmd->help);
 err_help:
-    free(cmd->cmd);
+    ms_free(cmd->cmd);
 err_cmd:
-    free(cmd);
+    ms_free(cmd);
     return NULL;
 }
 
 void ms_cmd_destroy(ms_cmd_t *cmd) {
-    free(cmd->cmd);
-    free(cmd->help);
-    free(cmd->arg_range);
-    free(cmd->arg_help_str);
-    if(cmd->arg) free(cmd->arg);
-    free(cmd);
+    ms_free(cmd->cmd);
+    ms_free(cmd->help);
+    ms_free(cmd->arg_range);
+    ms_free(cmd->arg_help_str);
+    if(cmd->arg) ms_free(cmd->arg);
+    ms_free(cmd);
 }
 
 ms_status_t ms_cmd_show_cmd_help(ms_cmd_t *head, ms_entry_t *entry) {
@@ -86,7 +88,7 @@ ms_status_t ms_cmd_show_cmd_help(ms_cmd_t *head, ms_entry_t *entry) {
 
     while(head) {
         if(len == 0 || strncmp(head->cmd, cmd, len) == 0)
-            printf("\n%-10s\t\t%s", head->cmd, head->help);
+            printf("\n%-20s%s", head->cmd, head->help);
         head = head->next;
     }
 
@@ -125,7 +127,7 @@ ms_status_t ms_cmd_hook_at_end(ms_cmd_t *head, ms_cmd_t *node) {
     return ms_st_ok;
 }
 
-#define     register_command(id, cmd, help)         { \
+#define     register_command(id, cmd, help)     { \
                                                     ms_log(log_dbg, "Adding command: %s", cmd); \
                                                     tmp = ms_cmd_create(id, cmd, help, "1-24", "Help arg", NULL); \
                                                     if(cur_cmd == NULL) {\
@@ -164,7 +166,8 @@ void ms_load_commands(ms_cmd_t **command_tree) {
         register_command(0x02, "id", "Show VLAN infromation by VLAN ID");
         register_command(0x03, "name", "Show VLAN infromation by name");
         sub_command_end();
-      register_command(0x03, "mac ", "Show MAC infromation");
+      register_command(0x03, "mac", "Show MAC infromation");
+      register_command(0x04, "mac-addr-table", "Show MAC infromation");
       sub_command_end();
     register_command(0x04, "connect", "Open terminal connection");
     register_command(0x05, "en-test", "Open terminal connection");
@@ -172,12 +175,11 @@ void ms_load_commands(ms_cmd_t **command_tree) {
     ms_log(log_dbg, "----------Command Register completed---------");
 }
 
-static ms_cmd_t* get_cmd_from_str(ms_cmd_t *head, char *cmd) {
+ms_cmd_t* ms_cmd_get_cmd_from_str(ms_cmd_t *head, char *cmd) {
     char tmp[128] = {0};
 
     sprintf(tmp, "%s ", cmd);
     while(head) {
-        ms_log(log_dbg, "comparing [%s] and [%s]", head->cmd, tmp);
         if(strcmp(head->cmd, tmp) == 0)
             return head;
         head = head->next;
@@ -192,18 +194,16 @@ void ms_cmd_update_cmd_head(ms_cmd_t *cmd_tree, ms_entry_t *entry, ms_cmd_t **cm
     ms_cmd_t *tmp;
 
     *cmd_head = cmd_tree;
-    ms_dbg_print_entry(entry);
     strncpy(command, entry->str, entry->len);
     tok = strtok(command, del);
     while(tok != NULL) {
-        tmp = get_cmd_from_str(*cmd_head, tok);
-        ms_log(log_dbg, "[%x]the command for token: %s is %x", addr(*cmd_head), tok, addr(tmp));
-        if(tmp != NULL)
+        tmp = ms_cmd_get_cmd_from_str(*cmd_head, tok);
+        if(tmp != NULL) {
             *cmd_head = tmp->children;
+        }
         tok = strtok(NULL, del);
     }
 }
-
 
 void ms_cmd_dbg_print_tree(ms_cmd_t *tree) {
     while(tree) {
