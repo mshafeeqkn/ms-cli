@@ -34,4 +34,4 @@ $(BIN_DIR):
 	[ -d $(BIN_DIR) ] || mkdir -p $(BIN_DIR)
 
 build/%.o : src/%.c
-	$(CC) -g $(INCLUDE) $(CFLAGS) -c $< -o $@
+	$(CC) $(INCLUDE) $(CFLAGS) -c $< -o $@

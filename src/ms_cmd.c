@@ -187,6 +187,29 @@ ms_cmd_t* ms_cmd_get_cmd_from_str(ms_cmd_t *head, char *cmd) {
     return NULL;
 }
 
+int ms_cmd_all_matching_cmds(ms_cmd_t *cmd_head, char *token, char ***commands) {
+    int token_len = strlen(token);
+    char *cmds[256] = {0};
+    int i = 0, num;
+
+    ms_dbg("Checking the matches for [%s] in %x", token, addr(cmd_head));
+
+    while(cmd_head) {
+        if(strncmp(cmd_head->cmd, token, token_len) == 0) {
+            cmds[i++] = cmd_head->cmd;
+        }
+        cmd_head = cmd_head->next;
+    }
+    ms_dbg("Total number of matches: %d", i);
+    num = i;
+    *commands = (char**)malloc(i * sizeof(char*));
+    for(;i >= 0; i--) {
+        (*commands)[i] = cmds[i];
+    }
+
+    return num;
+}
+
 void ms_cmd_update_cmd_head(ms_cmd_t *cmd_tree, ms_entry_t *entry, ms_cmd_t **cmd_head) {
     const char del[2] = " ";
     char *tok;
@@ -203,6 +226,10 @@ void ms_cmd_update_cmd_head(ms_cmd_t *cmd_tree, ms_entry_t *entry, ms_cmd_t **cm
         }
         tok = strtok(NULL, del);
     }
+}
+
+ms_cmd_t* ms_cmd_get_matching_cmd(ms_cmd_t *cmd_tree, ms_entry_t *entry) {
+    
 }
 
 void ms_cmd_dbg_print_tree(ms_cmd_t *tree) {

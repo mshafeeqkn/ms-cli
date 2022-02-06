@@ -44,6 +44,10 @@ extern void ms_cmd_update_cmd_head(ms_cmd_t *cmd_tree, ms_entry_t *entry, ms_cmd
 
 extern ms_cmd_t* ms_cmd_get_cmd_from_str(ms_cmd_t *head, char *cmd);
 
+extern int ms_cmd_all_matching_cmds(ms_cmd_t *cmd_head, char *token, char ***commands);
+
+extern ms_cmd_t* ms_cmd_get_matching_cmd(ms_cmd_t *cmd_tree, ms_entry_t *entry);
+
 extern void ms_cmd_dbg_print_tree(ms_cmd_t *tree);
 
 extern void ms_cmd_dbg_print(ms_cmd_t *cmd);
