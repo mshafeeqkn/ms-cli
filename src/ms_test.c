@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
+#include <fcntl.h>
 
 #include "ms_entry.h"
 #include "ms_log.h"
@@ -177,6 +178,12 @@ ms_status_t test_replace_last_command() {
     return ms_st_ok;
 }
 
+void test_open() {
+    int dev_file = open("/dev/pts/0", O_WRONLY, S_IWUSR);
+    write(dev_file, "shafeeque", 9);
+    close(dev_file);
+}
+
 extern void crash_handler(int sig);
 
 int main(int argc, char *argv[]) {
@@ -196,6 +203,6 @@ int main(int argc, char *argv[]) {
     ms_cmd_show_cmd_help(tree, cmd_path, sizeof(cmd_path));
     return 0;
 #endif
-    test_replace_last_command();
+    test_open();
     return 0;
 }
