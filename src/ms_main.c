@@ -19,8 +19,9 @@ void configure_stdin() {
 }
 
 void ms_complete_command(ms_cmd_t *cmd_tree, ms_entry_t *entry) {
-   ms_dbg("command tree: 0x%x and command: 0x%x", cmd_tree, entry);
-   ms_cmd_t *match = ms_cmd_get_matching_cmd(cmd_tree, entry);
+   ms_cmd_t *node = ms_cmd_get_matching_cmd(cmd_tree, entry);
+   node = node;
+   // ms_entry_set_string(entry, node->cmd);
 }
 
 int main(int argc, char *argv[]) {

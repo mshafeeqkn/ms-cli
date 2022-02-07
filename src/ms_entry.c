@@ -9,11 +9,11 @@
 extern ms_entry_t* ms_entry_create(char *str) {
     int len = strlen(str);
 
-    ms_entry_t *ret = ms_malloc(sizeof(ms_entry_t));
+    ms_entry_t *ret = ms_alloc(sizeof(ms_entry_t));
     if(!ret)
         return NULL;
 
-    ret->str = ms_malloc(len + 1);
+    ret->str = ms_alloc(len + 1);
     if(!ret->str) {
         ms_free(ret);
         return NULL;
@@ -55,7 +55,7 @@ ms_status_t ms_entry_set_string(ms_entry_t *entry, char *command) {
     cmd_len = strlen(command);
     ms_entry_get_last_command(entry, &cmd, &len);
     buff_len = entry->len - len + cmd_len;
-    tmp = ms_malloc(buff_len + 1);
+    tmp = ms_alloc(buff_len + 1);
     snprintf(tmp, buff_len + 1, "%s%s", entry->str, command+len);
     ms_free(entry->str);
     entry->str = tmp;
@@ -72,7 +72,7 @@ ms_status_t ms_entry_set_prefix(ms_entry_t *entry, char *prefix) {
 
     pref_len = strlen(prefix);
     // TODO: Free existing mem
-    entry->prefix = ms_malloc(pref_len + 1);
+    entry->prefix = ms_alloc(pref_len + 1);
     if(!entry->prefix)
         return -ms_st_mem_err;
 
@@ -127,7 +127,7 @@ ms_status_t ms_entry_insert_char_at(ms_entry_t *entry, int pos, char ch) {
         return ret;
 
     ms_free(entry->str);
-    entry->str = ms_malloc(entry->len);
+    entry->str = ms_alloc(entry->len);
     if(!entry->str)
         return -ms_st_mem_err;
 
@@ -183,6 +183,22 @@ ms_status_t ms_entry_hook_after(ms_entry_t *head, ms_entry_t *entry) {
     return ms_st_ok;
 }
 
+ms_status_t ms_entry_replace_last_word(ms_entry_t *entry, char *cmd) {
+    int i = entry->len;
+    char *tmp = entry->str;
+    int cmd_len = strlen(cmd);
+
+    while(entry->str[--i] != ' ');
+    entry->str[i] = 0;
+    entry->str = ms_alloc(i + cmd_len);
+    snprintf(entry->str, i + cmd_len + 2, "%s %s", tmp, cmd);   // +1 for space
+                                                                // +1 for str end NULL
+    ms_free(tmp);
+
+    entry->len = i + cmd_len + 1;
+    entry->cursor = i + cmd_len + 1;
+    return ms_st_ok;
+}
 
 ms_status_t ms_entry_copy_data(ms_entry_t *dst, ms_entry_t *src) {
     if(src == NULL || dst == NULL)
@@ -192,13 +208,13 @@ ms_status_t ms_entry_copy_data(ms_entry_t *dst, ms_entry_t *src) {
 
     if(dst->str)
         ms_free(dst->str);
-    dst->str = ms_malloc(src->len + 1);
+    dst->str = ms_alloc(src->len + 1);
     if(dst->str == NULL)
         return -ms_st_mem_err;
 
     if(dst->prefix)
         ms_free(dst->prefix);
-    dst->prefix = ms_malloc(pref_len + 1);
+    dst->prefix = ms_alloc(pref_len + 1);
     if(dst->prefix == NULL)
         return -ms_st_mem_err;
 

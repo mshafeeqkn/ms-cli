@@ -42,7 +42,7 @@ extern ms_status_t ms_cmd_hook_at_end(ms_cmd_t *head, ms_cmd_t *node);
 
 extern void ms_cmd_update_cmd_head(ms_cmd_t *cmd_tree, ms_entry_t *entry, ms_cmd_t **cmd_head);
 
-extern ms_cmd_t* ms_cmd_get_cmd_from_str(ms_cmd_t *head, char *cmd);
+extern ms_cmd_t* ms_cmd_get_cmd_from_str(ms_cmd_t *head, char *cmd, int len);
 
 extern int ms_cmd_all_matching_cmds(ms_cmd_t *cmd_head, char *token, char ***commands);
 

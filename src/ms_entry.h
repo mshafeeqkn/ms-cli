@@ -37,7 +37,7 @@ extern void ms_entry_free(ms_entry_t *entry);
  * Internal function to print a particular ms_entry_t for
  * DEBUGGING purpose
  *
- * Note: it recommended to use macro ms_entry_print instead of this function.
+ * Note: it is recommended to use macro ms_dbg_print_entry instead of this function.
  *
  * @param pref: Prefix(identified to be printed before
  *          actual data
@@ -125,6 +125,8 @@ extern void ms_print_entry(ms_entry_t *entry);
  * @return ms_st_ok on success. Appropriate error code on failure
  */
 extern ms_status_t ms_entry_hook_after(ms_entry_t *head, ms_entry_t *entry);
+
+extern ms_status_t ms_entry_replace_last_word(ms_entry_t *entry, char *cmd);
 
 /**
  * Print the list starting from entry in forward/reverse direction

@@ -5,6 +5,7 @@
 #include "ms_entry.h"
 #include "ms_log.h"
 #include "ms_cmd.h"
+#include "ms_utils.h"
 #if 0
 ms_status_t test_regsiter_after() {
     ms_status_t ret;
@@ -147,8 +148,37 @@ void test_strrchr() {
 }
 
 
+void test_for_each() {
+    char str[] ="- This, a sample string.";
+
+    FOR_EACH_STR(str, part, size) {
+        printf("part: %s - %d\n", part, size);
+    }
+}
+
+ms_status_t test_replace_last_command() {
+    ms_status_t ret;
+    ms_entry_t *entry = ms_entry_create("this is a test command");
+
+    if(entry == NULL)
+        return -ms_st_mem_err;
+    ms_dbg("Creating empty done");
+
+    ret = ms_entry_set_prefix(entry, ">");
+    if(ret != ms_st_ok)
+        return ret;
+    ms_dbg("Prefix set done");
+
+    ms_dbg_print_entry(entry);
+    ms_entry_replace_last_word(entry, "shafeequekn");
+    ms_dbg_print_entry(entry);
+    printf("\n");
+    return ms_st_ok;
+}
+
 int main(int argc, char *argv[]) {
     ms_log(log_dbg, "\033[2J");
+    ms_log_load_log_file();
 #if 0
     ms_status_t ret;
     ret = test_regsiter_after();
@@ -162,5 +192,6 @@ int main(int argc, char *argv[]) {
     ms_cmd_show_cmd_help(tree, cmd_path, sizeof(cmd_path));
     return 0;
 #endif
-    test_strrchr();
+    test_replace_last_command();
+    return 0;
 }

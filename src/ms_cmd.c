@@ -5,6 +5,7 @@
 #include "ms_cmd.h"
 #include "ms_log.h"
 #include "ms_mem.h"
+#include "ms_utils.h"
 
 
 ms_cmd_t* ms_cmd_create(unsigned int cmd_id,
@@ -20,31 +21,31 @@ ms_cmd_t* ms_cmd_create(unsigned int cmd_id,
     int arg_range_len = strlen(arg_range);
     int arg_help_len = strlen(arg_help);
 
-    cmd = ms_malloc(sizeof(ms_cmd_t));
+    cmd = ms_alloc(sizeof(ms_cmd_t));
     if(cmd == NULL)
         return NULL;
 
     memset(cmd, 0, sizeof(ms_cmd_t));
     cmd->cmd_id = cmd_id;
 
-    cmd->cmd = ms_malloc(cmd_len + 2);
+    cmd->cmd = ms_alloc(cmd_len + 2);
     if(cmd->cmd == NULL)
         goto err_cmd;
     snprintf(cmd->cmd, cmd_len+2, "%s ", cmd_str);
 
-    cmd->help = ms_malloc(help_len + 1);
+    cmd->help = ms_alloc(help_len + 1);
     if(cmd->help == NULL)
         goto err_help;
     strncpy(cmd->help, help, help_len);
     cmd->help[help_len] = 0;
 
-    cmd->arg_range = ms_malloc(arg_range_len + 1);
+    cmd->arg_range = ms_alloc(arg_range_len + 1);
     if(cmd->arg_range == NULL)
         goto err_range;
     strncpy(cmd->arg_range, arg_range, arg_range_len);
     cmd->arg_range[help_len] = 0;
 
-    cmd->arg_help_str = ms_malloc(arg_help_len + 1);
+    cmd->arg_help_str = ms_alloc(arg_help_len + 1);
     if(cmd->arg_help_str == NULL)
         goto err_arg_help;
     strncpy(cmd->arg_help_str, arg_help, arg_help_len);
@@ -175,12 +176,12 @@ void ms_load_commands(ms_cmd_t **command_tree) {
     ms_log(log_dbg, "----------Command Register completed---------");
 }
 
-ms_cmd_t* ms_cmd_get_cmd_from_str(ms_cmd_t *head, char *cmd) {
+ms_cmd_t* ms_cmd_get_cmd_from_str(ms_cmd_t *head, char *cmd, int len) {
     char tmp[128] = {0};
 
     sprintf(tmp, "%s ", cmd);
     while(head) {
-        if(strcmp(head->cmd, tmp) == 0)
+        if(strncmp(head->cmd, tmp, len) == 0)
             return head;
         head = head->next;
     }
@@ -211,25 +212,70 @@ int ms_cmd_all_matching_cmds(ms_cmd_t *cmd_head, char *token, char ***commands) 
 }
 
 void ms_cmd_update_cmd_head(ms_cmd_t *cmd_tree, ms_entry_t *entry, ms_cmd_t **cmd_head) {
-    const char del[2] = " ";
-    char *tok;
-    char command[1024] = {0};
     ms_cmd_t *tmp;
 
     *cmd_head = cmd_tree;
-    strncpy(command, entry->str, entry->len);
-    tok = strtok(command, del);
-    while(tok != NULL) {
-        tmp = ms_cmd_get_cmd_from_str(*cmd_head, tok);
+
+    FOR_EACH_STR(entry->str, tok, len) {
+        tmp = ms_cmd_get_cmd_from_str(*cmd_head, tok, len);
         if(tmp != NULL) {
             *cmd_head = tmp->children;
         }
-        tok = strtok(NULL, del);
     }
 }
 
+static void find_common_prefix(char *cur_prefix, char *cmd) {
+    int i = 0;
+    if(cur_prefix[0] == 0) {
+        strcpy(cur_prefix, cmd);
+        return;
+    }
+
+    while(cur_prefix[i] && cmd[i] && cur_prefix[i] == cmd[i]) {
+        i++;
+    }
+
+    cur_prefix[i] = 0;
+}
+
 ms_cmd_t* ms_cmd_get_matching_cmd(ms_cmd_t *cmd_tree, ms_entry_t *entry) {
-    
+    int matches = 0;
+    ms_cmd_t *node = cmd_tree;
+    ms_cmd_t *tmp = NULL;
+    char match_cmds[1024];
+    char match_prefix[1024];
+
+    FOR_EACH_STR(entry->str, part, size) {
+        tmp = NULL;
+        matches = 0;
+        memset(match_cmds, 0, sizeof(match_cmds));
+        memset(match_prefix, 0, sizeof(match_prefix));
+
+        while(node) {
+            node = ms_cmd_get_cmd_from_str(node, part, size);
+            if(!node)
+                break;
+
+            if(!tmp)
+                tmp = node;
+
+            find_common_prefix(match_prefix, node->cmd);
+            matches++;
+            strcat(match_cmds, node->cmd);
+            strcat(match_cmds, "\t");
+            node = node->next;
+        }
+
+        if(tmp && tmp->children)
+            node = tmp->children;
+    }
+
+    ms_dbg("Entry: %s: replace with: %s", entry->str, match_prefix);
+    ms_dbg_print_entry(entry);
+    ms_entry_replace_last_word(entry, match_prefix);
+    ms_dbg_print_entry(entry);
+
+    return node;
 }
 
 void ms_cmd_dbg_print_tree(ms_cmd_t *tree) {
