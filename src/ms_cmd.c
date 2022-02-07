@@ -270,10 +270,7 @@ ms_cmd_t* ms_cmd_get_matching_cmd(ms_cmd_t *cmd_tree, ms_entry_t *entry) {
             node = tmp->children;
     }
 
-    ms_dbg("Entry: %s: replace with: %s", entry->str, match_prefix);
-    ms_dbg_print_entry(entry);
     ms_entry_replace_last_word(entry, match_prefix);
-    ms_dbg_print_entry(entry);
 
     return node;
 }

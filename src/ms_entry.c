@@ -5,6 +5,7 @@
 #include "ms_defines.h"
 #include "ms_log.h"
 #include "ms_mem.h"
+#include "ms_utils.h"
 
 extern ms_entry_t* ms_entry_create(char *str) {
     int len = strlen(str);
@@ -188,15 +189,21 @@ ms_status_t ms_entry_replace_last_word(ms_entry_t *entry, char *cmd) {
     char *tmp = entry->str;
     int cmd_len = strlen(cmd);
 
-    while(entry->str[--i] != ' ');
+    while(entry->str[--i] != ' ' && i != 0);
     entry->str[i] = 0;
     entry->str = ms_alloc(i + cmd_len);
-    snprintf(entry->str, i + cmd_len + 2, "%s %s", tmp, cmd);   // +1 for space
-                                                                // +1 for str end NULL
+    if(IS_EMPTY_STR(tmp)) {
+        strncpy(entry->str, cmd, cmd_len);
+        entry->len = cmd_len;
+        entry->cursor = cmd_len;
+    } else {
+        snprintf(entry->str, i + cmd_len + 2, "%s %s", tmp, cmd);   // +1 for space
+                                                                    // +1 for str end NULL
+        entry->len = i + cmd_len + 1;
+        entry->cursor = i + cmd_len + 1;
+    }
     ms_free(tmp);
 
-    entry->len = i + cmd_len + 1;
-    entry->cursor = i + cmd_len + 1;
     return ms_st_ok;
 }
 

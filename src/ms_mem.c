@@ -3,6 +3,7 @@
 #include "ms_log.h"
 
 void *_ms_alloc(char *file, int line, size_t size) {
+    ms_log(log_mem, "%d bytes ++memory allocated at: %x", size);
     void *ret = malloc(size);
     memset(ret, 0, size);
     ms_log(log_mem, "%s:%d %d bytes ++memory allocated at: %x", file, line, size, ret);
