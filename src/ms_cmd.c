@@ -75,25 +75,30 @@ void ms_cmd_destroy(ms_cmd_t *cmd) {
 }
 
 ms_status_t ms_cmd_show_cmd_help(ms_cmd_t *head, ms_entry_t *entry) {
-    char *cmd;
-    int len;
+    ms_cmd_t *node = head;
+    char last_part[128] = {0};
+    int last_len = 0;
 
-    if(head == NULL && entry != NULL) {
-        printf("\n<cr>\n");
-        return ms_st_ok;
+    FOR_EACH_STR(entry->str, tok, len) {
+        node = ms_cmd_get_cmd_from_str(node, tok, len);
+
+        if(node->children)
+            node = node->children;
+        strncpy(last_part, tok, len);
+        last_len = len;
     }
 
-    if(ms_entry_get_last_command(entry, &cmd, &len) != ms_st_ok) {
-        return -ms_st_fail;
+    if(node) {
+        node = node->parent->children;
+        while(node) {
+            if(len == 0 || strncmp(node->cmd, last_part, last_len) == 0) {
+                printf("\n%-20s%s", node->cmd, node->help);
+            }
+            node = node->next;
+        }
+        putchar('\n');
     }
 
-    while(head) {
-        if(len == 0 || strncmp(head->cmd, cmd, len) == 0)
-            printf("\n%-20s%s", head->cmd, head->help);
-        head = head->next;
-    }
-
-    putchar('\n');
     return ms_st_ok;
 }
 
@@ -269,9 +274,9 @@ ms_cmd_t* ms_cmd_get_matching_cmd(ms_cmd_t *cmd_tree, ms_entry_t *entry) {
         if(tmp && tmp->children)
             node = tmp->children;
     }
-
     ms_entry_replace_last_word(entry, match_prefix);
-
+    if(matches > 1)
+        printf("\n%s\n", match_cmds);
     return node;
 }
 
