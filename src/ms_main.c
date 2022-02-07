@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
+#include <signal.h>
 
 #include "ms_entry.h"
 #include "ms_log.h"
 #include "ms_cmd.h"
 #include "ms_mem.h"
 
+extern void crash_handler(int sig);
 
 void configure_stdin() {
     struct termios info;
@@ -31,6 +33,7 @@ int main(int argc, char *argv[]) {
     ms_cmd_t *cmd_tree = NULL;
     ms_cmd_t *cmd_head;
 
+    signal(SIGSEGV, crash_handler);
     ms_log_load_log_file();
     ms_log(log_dbg, "\033[2J");
     head = entry = ms_entry_create(EMPTY_STR);

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "ms_entry.h"
 #include "ms_log.h"
@@ -176,7 +177,10 @@ ms_status_t test_replace_last_command() {
     return ms_st_ok;
 }
 
+extern void crash_handler(int sig);
+
 int main(int argc, char *argv[]) {
+    signal(SIGSEGV, crash_handler);
     ms_log(log_dbg, "\033[2J");
     ms_log_load_log_file();
 #if 0

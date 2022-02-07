@@ -2,10 +2,11 @@ OBJS = \
     build/ms_log.o\
     build/ms_entry.o\
 	build/ms_cmd.o\
-    build/ms_mem.o
+    build/ms_mem.o\
+    build/ms_utils.o
 
 EXEC=bin/ms-cli
-CFLAGS = -g -Wall -Werror
+CFLAGS = -g -Wall -Werror -rdynamic
 CC = gcc
 INCLUDE =
 LIBS =
